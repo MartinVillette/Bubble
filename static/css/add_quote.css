@@ -1,0 +1,117 @@
+body{
+    overflow-y: scroll;
+}
+.lesson-quote-container{
+    margin-top: 20vh;
+}
+.quote-list-title{
+    color:white;
+}
+.form-container{
+    background:white;
+    border-radius: 15px;
+    padding:50px 100px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    transition: background .2s;
+}
+.form-container label{
+    display: none;
+}
+#id_quote{
+    min-height: 50px;
+    resize: none;
+    overflow: hidden;
+    color:var(--text-color);
+    font-size: 20px;
+    font-family: 'Poppins SemiBold';
+    margin-bottom: 20px;
+}
+#id_quote::placeholder{
+    color:var(--text-color);
+    font-size: 25px;
+    font-style: italic;
+    opacity: .8;
+}
+#id_author{
+    background:var(--text-color);
+    border-radius:5px;
+    padding:10px 20px;
+    color:white;
+    outline:none;
+    border:none;
+    margin-top:10px;
+    width:175px;
+}
+#id_author:after {
+    cursor:none;
+}
+#id_page{
+    margin-top:10px;
+    color:var(--text-color);
+    font-size: 17px;
+    opacity: .8;
+}
+#id_page::placeholder{
+    color:var(--text-color);
+    font-size: 15px;
+    font-style: italic;
+}
+
+.submit-button{
+    text-align: center;
+    width: max-content;
+    padding:10px;
+    border-radius:10px;
+    color:white;
+    margin: 0 auto;
+    margin-top:20px;
+    transition: .2s;
+    font-size: 30px;
+    font-family: 'Poppins SemiBold';
+    font-style: italic;
+    position: relative;
+}
+.submit-button:hover{
+    color:var(--color);
+}
+.suggestion-container{
+    margin-top: 50px;
+}
+.suggestion-text{
+    color:white;
+    font-size:30px;
+    font-family: 'Poppins SemiBold';
+    font-style: italic;
+    text-align: left;
+}
+.lesson-quote-container{
+    display: flex;
+}
+.quote-list-content{
+    grid-template-columns: auto 60px;
+}
+.quote-list {
+    background:rgba(255, 255, 255, .7);
+}
+.quote-list:hover{
+    background:rgba(255, 255, 255, 1);
+}
+.quote-container{
+    width:80%;
+}
+.bottom-bar{
+    background: var(--color);   
+}
+.bottom-bar .submit-button{
+    color:white;
+    opacity: 1;
+}
+
+#back-button{
+    color:white;
+}
+#back-button:hover{
+    color:var(--color);
+}

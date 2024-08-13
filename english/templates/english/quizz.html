@@ -1,0 +1,404 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Quizz</title>
+    <link rel="stylesheet" href="{% static 'css/quizz.css'%}?{% now 'U' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <div class="content-container">
+        <div id="progression-bar"><div id="progression"></div></div>
+        <div class="card-container">
+            <div class="background-card" id="background-card-1"></div>
+            <div class="background-card" id="background-card-2"></div>
+            <div class="background-card" id="background-card-3"></div>
+            <div class="card hide">
+                <div class="doing-quizz">   
+                    <p class="card-text">some text</p>
+                    <p id="correct-card-text"></p>
+                </div>
+            </div>
+        </div>
+        <div class="typing-container">
+            <input id="typing-input" onkeyup="keyDown(this)" type="text" name="" id="" placeholder="Ecris ici...">
+            <button class="pass-button" onclick="pass()">passer</button>
+        </div>
+    </div>
+
+    <div class="finished">   
+        <button class="finished-button" onclick="refresh_page()">Recommencer</button>
+        <a href="{% url 'lesson-english' lesson_id=lesson.id %}">Retour</a>
+    </div>
+
+    <form action="{% url 'lesson-quizz-english' lesson_id=lesson.id %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="cards" id="" value="">
+        <input type="hidden" name="next" id="" value="">
+    </form>
+
+    <div class="parameters-panel">
+        <img src="{% static 'images/parameter.svg' %}" alt="">
+        <button onclick="switchKey()">Echanger</button>
+    </div>
+    <div class="parameters-panel-phone">
+        <img class="parameters-button" src="{% static 'images/parameter.svg' %}" alt="">
+        <div class="parameters-panel-phone-wrapper" style="visibility: hidden;">
+            <button onclick="switchKey()">Echanger</button>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('.parameters-button').addEventListener('click',()=>{
+            const p = document.querySelector('.parameters-panel-phone-wrapper')
+            p.style.visibility = p.style.visibility == 'hidden' ? 'visible':'hidden'
+        })
+
+        for (navLink of document.querySelectorAll('.nav-link')){
+            navLink.classList.add('nav-link-white')
+        }
+
+        document.querySelector('.card').addEventListener("mouseover", function() {
+            cursor.style.zIndex = '1'
+        }, false);
+        document.querySelector('.card').addEventListener("mouseout", function() {
+            cursor.style.removeProperty('z-index')
+        }, false);
+        hoverSmallColor(document.querySelector('.card'))
+
+        document.querySelector('#typing-input').addEventListener("mouseover", function() {
+            cursor.style.zIndex = '1'
+        }, false);
+        document.querySelector('#typing-input').addEventListener("mouseout", function() {
+            cursor.style.removeProperty('z-index')
+        }, false);
+        hoverSmallColor(document.querySelector('#typing-input'))
+
+        hover100(document.querySelector('.pass-button'))
+        hover100(document.querySelector('.finished'))
+        document.querySelector('.parameters-panel-phone-wrapper').addEventListener('mouseover',()=>{
+            cursor.style.zIndex = '1'
+        })
+        document.querySelector('.parameters-panel-phone-wrapper').addEventListener('mouseout',()=>{
+            cursor.style.removeProperty('z-index')
+        })
+        hoverSmallColor(document.querySelector('.parameters-panel-phone-wrapper'))
+
+        document.querySelector('.parameters-panel').addEventListener("mouseover", function() {
+            cursor.style.zIndex = '1'
+        }, false);
+        document.querySelector('.parameters-panel').addEventListener("mouseout", function() {
+            cursor.style.removeProperty('z-index')
+        }, false);
+        hoverSmallColor(document.querySelector('.parameters-panel'))
+
+        const card = document.querySelector('.card')
+        const backgroundCards = document.querySelectorAll('.background-card')
+        
+        window.addEventListener("load", ()=>{
+            show()
+            setTimeout(()=>{
+                document.querySelector('#progression-bar').style.width = '300px'
+                document.querySelector('.typing-container').style.opacity = 1
+            },1000)
+        });
+
+        
+        const baseCards = [
+            {% for card_profile in profile.cards.all %}
+                {
+                    'text1':'{{card_profile.card.text1}}',
+                    'text2':'{{card_profile.card.text2}}',
+                    'counter':'{{card_profile.counter}}',
+                    'correct':'{{card_profile.correct}}',
+                },
+            {% endfor %}
+        ]
+        let cards = []
+        let end_cards = []
+        let next_cards = []
+        let cardsLength = baseCards.length
+        let pressKey = false
+        let keyText = ['text1','text2']
+        let key = parseInt('{{profile.key}}') - 1
+        let rewriteWord = false
+        
+        function switchKey(){
+            key = (key + 1) % 2
+            sendData()
+            reset()
+            document.querySelector('.parameters-panel-phone-wrapper').classList.remove('visible')
+        }
+
+
+        function onlyUnique(value, index, self) {
+            return self.indexOf(value) === index;
+        }
+
+        function getKeyByValue(object, value) {
+            return Object.keys(object).find(key => object[key] === value);
+        }
+
+        function shuffle(arr) {
+            array = [...arr]
+            let currentIndex = array.length,  randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function sortArray(array) {
+            arr = [...array]
+            arr.sort((a,b)=>{
+                return b.correct - a.correct
+            }).reverse()
+            counters = arr.map(({correct}) => correct).filter(onlyUnique)
+            let l = []
+            for (i of counters){
+                let sub = []
+                for (h of array){
+                    if (h['correct'] == i){
+                        sub.push(h)
+                    }
+                }
+                l = l.concat(shuffle(sub))
+            }
+            return (l)
+        }
+
+
+        function keyDown(input){
+            if (event.key == 'Enter' || rewriteWord){
+                let input_values = input.value.toLowerCase().split(/[,/]+/)
+                for (i=0;i<input_values.length;i++){
+                    input_values[i] =  input_values[i].trim()
+                }
+                input.style.color = 'var(--text-color)';
+                
+    
+                cards[currentIndex]['counter']++
+            
+                l = cards[currentIndex][keyText[(key+1)%2]].toLowerCase().replace('&#x27;',"'").split(/[,/]+/)
+                a = []
+                b = []  
+                for (t of l){
+                    a.push(t.replace(/\(|\)/g, "").trim())
+                    b.push(t.replace(/ *\([^)]*\) */g, "").trim())
+                }
+                
+                let correct = true
+                for (value of input_values){
+                    if (!a.includes(value) && !b.includes(value)){
+                        correct = false
+                    }
+                }
+                
+                
+                if (rewriteWord) {
+                    if (correct){
+                        rewriteWord = false
+                        input.disabled  = true
+                        setTimeout(()=>{
+                            nextCardPress()
+                        },200)
+                    }
+                } else if (correct){
+                    // correct
+                    input.disabled  = true
+                    text.style.color = 'var(--correct-color)';
+                    input.style.color = 'var(--correct-color)';
+                    correctCounter++;
+                    cards[currentIndex]['correct']++
+                    end_cards.push(cards[currentIndex])
+                    setTimeout(function () {
+                        nextCard();
+                    }, 1000);
+                } else {
+                    // wrong
+                    text.style.color = 'var(--wrong-color)';
+                    input.style.color = 'var(--wrong-color)';
+                    correctText.innerHTML = '<span>Correct : </span>' + cards[currentIndex][keyText[(key+1)%2]]               
+                    input.value = ''
+                    pressKey = true
+                    rewriteWord = true
+                    next_cards.push(cards[currentIndex])
+                    // setTimeout(function () {
+                    //     next_cards.push(cards[currentIndex])
+                    //     if (window.innerHeight <= 600){
+                    //         input.value = "Appuie sur l'écran"
+                    //         window.addEventListener('click',nextCardPress, {once:true})
+                    //     } else {
+                    //         input.value = 'Appuie sur une touche'
+                    //         window.addEventListener('keypress', nextCardPress, {once:true});
+                    //     }
+                        
+                        
+                    // }, 1000);  
+                }
+            }
+        }
+
+        function refresh(){
+            location.reload()   
+        }
+
+        function restart(){
+            cards = sortArray(next_cards)
+            next_cards = []
+            currentIndex = 0
+        }
+
+        function hide(){
+            document.querySelector('.card-text').classList.remove('opacity-visible')
+            n = backgroundCards.length
+            for (i=0;i<n;i++){
+                let card = backgroundCards[i]
+                card.classList.remove(`background-card-${i+1}`)
+            }
+            card.classList.add(`hide`)
+        }
+        function show(){
+            n = backgroundCards.length
+            for (i=0;i<n;i++){
+                let card = backgroundCards[i]
+                card.classList.add(`background-card-${i+1}`)
+            }
+            card.classList.remove(`hide`)
+            setTimeout(()=>{
+                document.querySelector('.card-text').classList.add('opacity-visible')
+            },150)
+        }
+
+        function updateCard(){
+            hide()
+            doingQuizz.classList.remove('opacity-visible')
+    
+            setTimeout(function () {
+                correctText.innerHTML = '';
+                text.style.color = 'var(--text-color)';
+                input.style.color = 'var(--text-color)';
+                progressionBar.style.width = ((correctCounter/cardsLength)*100).toString() + '%';
+                text.innerHTML = cards[currentIndex][keyText[key]];
+                input.disabled  = false
+                doingQuizz.classList.add('opacity-visible')
+                show()
+                input.value = '';
+                input.focus();
+            }, 300);  
+
+        }
+
+        function nextCard(){
+            currentIndex++
+            if (currentIndex >= cards.length){
+                // restart
+                restart()
+                if (cards.length == 0){
+                    end()
+                } else {
+                    updateCard()
+                }
+            } else {
+                updateCard()
+            }
+        }
+
+        function end(){
+            hide()
+            doingQuizz.classList.toggle('opacity-visible')
+            cursor.classList.remove('hover-color')
+            finishedContainer.classList.toggle('opacity-visible')
+            finishedContainer.style.display = 'flex'
+            document.getElementsByClassName('typing-container')[0].style.display = 'none'
+            document.getElementById('progression-bar').style.display = 'none'
+            document.querySelector('.finished-button').focus()
+        }
+        
+        function nextCardPress(){
+            if (pressKey){
+                pressKey = false
+                nextCard()
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function pass(){
+            correctText.innerHTML = '<span>Correct : </span>' + cards[currentIndex][keyText[(key+1)%2]]               
+            pressKey = true
+            setTimeout(function () {
+                next_cards.push(cards[currentIndex])
+                if (window.innerHeight <= 600){
+                    input.value = "Appuie sur l'écran"
+                    window.addEventListener('click',nextCardPress, {once:true})
+                } else {
+                    input.value = 'Appuie sur une touche'
+                    window.addEventListener('keypress', nextCardPress, {once:true});
+                }
+            }, 1000);
+        }
+
+        function reset(){
+            cards = sortArray(baseCards);
+            currentIndex = 0;
+            correctCounter = 0;
+            updateCard();
+        }
+
+        function start(){
+            cards = sortArray(baseCards);
+            doingQuizz.classList.remove('opacity-visible')
+            correctText.innerHTML = '';
+            text.style.color = 'var(--text-color)';
+            input.style.color = 'var(--text-color)';
+            progressionBar.style.width = ((correctCounter/cardsLength)*100).toString() + '%';
+            text.innerHTML = cards[currentIndex][keyText[key]];
+            input.disabled  = false
+            doingQuizz.classList.add('opacity-visible')
+            input.value = '';
+            input.focus();
+        }
+
+        const input = document.getElementById('typing-input');
+        
+        window.addEventListener("pageshow", ()=>{
+            input.focus();
+            
+        }, false);
+        
+        const text = document.querySelector('.card-text');
+        const correctText = document.getElementById('correct-card-text');
+        const progressionBar = document.getElementById('progression');
+
+        const doingQuizz = document.getElementsByClassName('doing-quizz')[0]
+        const finishedContainer = document.getElementsByClassName('finished')[0]
+        finishedContainer.style.display = 'none'
+        doingQuizz.classList.add('opacity-visible')
+
+        let currentIndex = 0;
+        let correctCounter = 0;
+        start()
+
+
+
+        function sendData(){
+            let data = new FormData();
+            data.append('cards',JSON.stringify(end_cards))
+            data.append('key',JSON.stringify(key))
+            data.append('csrfmiddlewaretoken','{{csrf_token}}')
+            navigator.sendBeacon('', data)
+        }
+
+        function refresh_page(){
+            sendData()
+            location.reload()
+        }
+
+        window.addEventListener("beforeunload", () => {
+            event.preventDefault();
+            sendData()
+        });
+    </script>
+{% endblock %}

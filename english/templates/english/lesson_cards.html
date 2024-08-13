@@ -1,0 +1,65 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/lesson_cards.css'%}?{% now 'U' %}">
+    <script src="{% static 'scripts/white_page.js' %}"></script>
+
+    <div class="lesson-card-container">
+        <div class="lesson-card-title-container">
+            <p class="card-list-title">Cartes</p>
+            <p class="card-list-lesson-title">{{lesson.title}}</p>
+        </div>
+        {% for card in lesson.cards.all %}
+                <div class="card-list">
+                    <p class="card-number">1.</p>
+                    <div class="card-list-content">
+                        <p class="card-list-word">{{card.text1}}</p>
+                        <img class="card-list-arrow" src="{% static 'images/arrow.svg' %}" alt="">
+                        <p class="card-list-word">{{card.text2}}</p>
+                    </div>
+                </div>
+        {% endfor %}
+    </div>
+    <button id="back-button" class="page-button" onclick="changeWindow(`{% url 'lesson-english' lesson_id=lesson.id %}`,'color')">Retour</button>
+
+    <script>
+        for (button of document.querySelectorAll('.page-button')){
+            hover100(button)
+        } 
+
+        window.addEventListener("pageshow", ()=>{
+            document.querySelector('.transition-div').style.visibility = 'hidden'
+            document.querySelector('.transition-div').classList.remove('transition-active')
+            for (button of document.querySelectorAll('.page-button')){
+                button.classList.add('opacity-visible')
+            }
+            showCards()
+        }, false);
+        
+        function showCards(){
+            let i = 0 
+            let cards = document.querySelectorAll('.card-list')
+            function myLoop() {         //  create a loop function
+                setTimeout(function() {   //  call a 3s setTimeout when the loop is called                     //  increment the counter
+                    if (i < Math.min(cards.length,6)) {           //  if the counter < 10, call the loop function
+                        cards[i].classList.add('opacity-visible')
+                        hoverSmallWhite(cards[i])
+                        myLoop();             
+                    } 
+                    i++             
+                }, 200)
+            }
+            document.querySelector('.lesson-card-title-container').classList.add('opacity-visible')
+            myLoop()
+            for (j=6; j < cards.length;j++){
+                cards[j].classList.add('opacity-visible')
+                hoverSmallWhite(cards[j])
+            }      
+        }
+        
+        let cardNumber = document.getElementsByClassName('card-number')
+        for (i=0;i<cardNumber.length;i++){
+            cardNumber[i].innerHTML = `${i+1}.`
+        }
+    </script>
+{% endblock %}

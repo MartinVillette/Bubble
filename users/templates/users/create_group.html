@@ -1,0 +1,39 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Nouveau groupe</title>
+    <link rel="stylesheet" href="{% static 'css/create_group.css' %}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+
+    <div>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="navigation-container">
+                {% if 'edit' in request.build_absolute_uri %}
+                <input type="submit" class="submit-button" name="" id="" value='Modifer'>
+                {% else %}
+                <input type="submit" class="submit-button" name="" id="" value='Créer'>
+                {% endif %}
+            </div>
+            {% if 'edit' in request.build_absolute_uri  %}
+            <button class="second-button" onclick="changeWindow(`{% url 'group-page' group_id=group.id %}`)">Retour</button>
+            {% endif %}
+        </form>
+        
+    </div>
+    <script>   
+        document.querySelectorAll('input[type=text]')[0].placeholder='Nom du groupe'
+        hover100(document.querySelector('.submit-button'))
+        if (document.querySelector('.second-button')){
+            hover100(document.querySelector('.second-button'))
+        }
+        document.querySelector('form').addEventListener('mouseover', ()=>{
+            cursor.style.zIndex = '1'
+        })
+        document.querySelector('form').addEventListener('mouseout', ()=>{
+            cursor.style.removeProperty('z-index')
+        })
+        hoverSmallColor(document.querySelector('form'))
+    </script>
+{% endblock %}

@@ -1,0 +1,105 @@
+body{
+    overflow-y: scroll;
+}
+.page{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap:10%;
+}
+.color-page{
+    background:var(--color)
+}
+.page p{
+    color:white;
+}
+.color-page p{
+    color:var(--color);
+}
+.text-container{
+    position: relative;
+    text-align: center;
+    padding:30px;
+}
+.title{
+    font-size:50px;
+    font-family: "Poppins Semibold";
+    font-style: italic;
+}
+.description{
+    font-size:17px;
+    font-style: italic;
+}
+.button{
+    font-size:15px;
+    font-style: italic;
+    margin-top:15px;
+}
+
+.placeholder{
+    position: absolute;
+    opacity: .5;
+    left:50%;
+    top:50%;
+    color:var(--color) !important;
+    transform: translate(-50%,-50%);
+}
+.color-page .placeholder{
+    color:white !important;
+}
+.text-container:hover .placeholder{
+    display: none;
+}
+
+.preview-img{
+    width:500px;
+}
+#anglais .preview-img{
+    transform: perspective(1000px) rotateY(-30deg);
+}
+#français .preview-img{
+    transform: perspective(1000px) rotateY(30deg);
+}
+.menu{
+    padding:20px;
+    position: absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%,-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap:20px;
+}
+.menu-button{
+    width:150px;
+    height: 100px;
+    padding:30px 40px;
+    text-align: center;
+}
+.button-title{
+    color:var(--color);
+    font-size:30px;
+}
+.menu-button:hover .button-title{
+    color:white;
+}
+.button-description{
+    color:white;
+}
+@media screen and (max-width:800px) {
+    .menu{
+        flex-direction: column;
+    }
+    .button-title{
+        font-size: 17px;
+    }
+    .menu-button{
+        width:150px;
+        height: 50px;
+        padding:30px 40px;
+        text-align: center;
+    }
+}

@@ -1,0 +1,96 @@
+body{
+    background: white;
+}
+.users{
+    margin:0 auto;
+    margin-top:30vh;
+    margin-bottom:10vh;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    width:max-content;
+    opacity: 0;
+    transition: 1s;
+}
+.users-container{
+    width:max-content;
+    margin:0 auto;
+    margin-top:20px;
+    text-align: center;
+    background:var(--color);
+    padding:50px 60px;
+    border-radius:30px;
+    display: flex;
+    flex-direction: column;
+}
+.user-container{
+    color:white;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+.user-container:not(:first-child){
+    margin-top:5px;
+}
+.user-menu{
+    display: flex;
+    flex-direction: row;
+    margin-left:30px;
+    align-items: center;
+}
+.user-menu img{
+    height:20px;
+}
+.user-menu *:not(:first-child){
+    margin-left:10px;
+}
+
+.username{
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+}
+.users-title{
+    color:var(--text-color);
+    font-size:50px;
+    text-align: center;
+    font-family: 'Poppins SemiBold';
+    font-style: italic;
+}
+.admin{
+    color:orange;
+}
+.admin-text{
+    color:orange;
+    margin-left: 10px;
+    opacity: .8;
+    font-size:10px;
+    font-style:italic;
+}
+.super-admin{
+    color:rgb(178, 30, 30);
+}
+.super-admin-text{
+    color:rgb(178, 30, 30);
+    margin-left: 10px;
+    opacity: .8;
+    font-size:10px;
+    font-style:italic;
+}
+#users-button {
+    right:0;
+    bottom:0;
+}
+.page-button{
+    color:rgba(var(--color-rgb),.5);
+}
+.page-button:hover{
+    color:white;
+    opacity: 1;
+}
+#back-button{
+    position: absolute;
+    left:70px;
+    top:70px;
+}

@@ -1,0 +1,62 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/home.css'%}?{% now 'U' %}">
+    <script src="{% static 'scripts/white_page.js' %}"></script>
+    {% if not request.user.is_authenticated %}
+    <section class="page color-page" id='anglais'> 
+        <div class="text-container" onclick="changeWindow(`{% url 'login' %}`,'color')">
+            <p class="placeholder">Regarde ici</p>
+            <p class="title">Anglais.</p>
+            <p class="description">Apprend ton vocabulaire à l'aide de cartes et de quizz</p>
+            <p class="button">click pour commencer</p>
+        </div>
+        <div class="image-container">
+            <img src="{% static 'images/anglais.png' %}" class="preview-img" alt="">
+        </div>
+    </section>
+    <section class="page" id='français'> 
+        <div class="image-container">
+            <img src="{% static 'images/francais.png' %}" class="preview-img" alt="">
+        </div>
+        <div class="text-container" onclick="changeWindow(`{% url 'login' %}`,'color')">
+            <p class="placeholder">Regarde ici</p>
+            <p class="title">Français.</p>
+            <p class="description">Note tes citations, partager les et classes les par thèmes</p>
+            <p class="button">click pour commencer</p>
+        </div>
+    </section>
+    {% else %}
+    <div class="menu">
+        <div class="menu-button" onclick="changeWindow(`{% url 'user-lessons-english' username=request.user.username %}`,'color')">
+            <p class="button-title">Anglais.</p>
+            <p class="button-description"></p>
+        </div>
+        <div class="menu-button" onclick="changeWindow(`{% url 'lesson-french' %}`,'color')">
+            <p class="button-title">Français.</p>
+            <p class="button-description"></p>
+        </div>
+        <div class="menu-button" onclick="changeWindow(`{% url 'groups' %}`,'color')">
+            <p class="button-title">Groupes.</p>
+            <p class="button-description"></p>
+        </div>
+    </div>
+    {% endif %}
+    <script>
+        {% if not request.user.is_authenticated %}
+        for (colorPage of document.querySelectorAll('.color-page')){
+            colorPage.addEventListener('mouseover',()=>{
+                cursor.classList.remove('color-cursor')
+            })
+            colorPage.addEventListener('mouseout',()=>{
+                cursor.classList.add('color-cursor')
+            })
+        }
+        for (container of document.querySelectorAll('.text-container')){
+            hover500(container)
+        }
+        {% else %}
+        hover300(document.querySelector('.menu'))
+        {% endif %}
+</script>
+{% endblock %}

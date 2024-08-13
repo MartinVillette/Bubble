@@ -1,0 +1,150 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Groupes</title>
+    <link rel="stylesheet" href="{% static 'css/menu.css' %}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+
+
+    <div class="page-container">    
+        <section class="section-title">
+            <div class="title-container">
+                <p class="title">Mes groupes.</p>
+                <button class="create-button" onclick="changeWindow(`{% url 'create-group'%}`,'white')">Nouveau groupe +</button>
+            </div>
+        </section>
+
+        <section class="section-container">
+            <div class='navigation-container'>
+                <input type="input" name="" class="search-bar" id="" placeholder="Rechercher..." onkeydown="search(this)">
+            </div>
+
+            {% if admin_groups %}
+            <div class="container">
+                <p class="container-title">Mes Groupes Admins.</p>
+                <div class="items-container" id="admin">
+                    {% for group in admin_groups %}
+                    <div class="item-container" onclick="changeWindow(`{% url 'group-page' group_id=group.id %}`)">
+                        <p class='item-title'>{{group.name}}</p>
+                        <p class="item-description">De {{group.super_admin}}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if users_groups %}
+            <div class="container">
+                <p class="container-title">Mes Groupes.</p>
+                <div class="items-container" id="users">
+                    {% for group in users_groups %}
+                    <div class="item-container" id="{{group.id}}" onclick="changeWindow(`{% url 'group-page' group_id=group.id %}`)">
+                        <p class='item-title'>{{group.name}}</p>
+                        <p class="item-description">De {{group.super_admin}}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <script>
+       const groups = {
+            'admin':[
+                {% for group in admin_groups %}
+                    {
+                        'name':'{{group.name}}',
+                        'superAdmin':'{{group.super_admin}}',
+                        'id':'{{group.id}}',
+                    },
+                {% endfor %}
+            ],
+            'users':[
+                {% for group in users_groups %}
+                    {
+                        'name':'{{group.name}}',
+                        'superAdmin':'{{group.super_admin}}',
+                        'id':'{{group.id}}',
+                    },
+                {% endfor %}
+            ],
+        }
+    
+        hover100(document.querySelector('.create-button'))
+        for (item of document.querySelectorAll('.item-container')){
+            hoverSmallColor(item)
+            item.addEventListener('mouseover',()=>{
+                cursor.style.zIndex = '1'
+            })
+            item.addEventListener('mouseout',()=>{
+                cursor.style.removeProperty('z-index')
+            })
+        }
+
+        {% if users_groups or admin_groups %}
+        hoverSmallColor(document.querySelector('.search-bar'))
+        document.querySelector('.search-bar').addEventListener('mouseover',()=>{
+            cursor.style.zIndex = '1'
+        })
+        document.querySelector('.search-bar').addEventListener('mouseout',()=>{
+            cursor.style.removeProperty('z-index')
+        })
+        {% endif %}
+
+        function showContainers(){
+            {% if users_groups or admin_groups %}
+            document.querySelector('.section-container').style.display = 'flex'
+            document.querySelector('.title-container').style.marginTop = '20vh'
+            setTimeout(()=>{
+                document.querySelector('.create-button').classList.add('opacity-visible')
+            }, 200)
+            setTimeout(()=>{
+                document.querySelector('.section-container').classList.add('opacity-visible')
+                document.querySelector('body').style.overflowY = 'scroll'
+            }, 500)
+            search()
+            {% else %}
+            setTimeout(()=>{
+                document.querySelector('.create-button').classList.add('opacity-visible')
+            }, 200)
+            {% endif %}
+        }
+
+        function search(elem){
+            if (event.keyCode == 8){
+                groupName = elem.value.slice(0,-1).trim().toLowerCase()
+            } else {
+                groupName = (elem) ? (elem.value + event.key).trim().toLowerCase() : ''
+            }
+            for (container of document.querySelectorAll('.items-container')){
+                container.innerHTML = ''
+                for (group of groups[container.id]){
+                    name = group['name'].trim().toLowerCase()
+                    if (name.startsWith(groupName)){
+                        url = `{% url 'group-page' group_id=12345 %}`.replace(/12345/,group['id']);
+                        container.innerHTML += `
+                        <div class="item-container" onclick="changeWindow('${url}'),'color'">
+                            <p class='item-title'>${group['name']}</p>
+                            <p class="item-description">De ${group['superAdmin']}</p>
+                        </div>
+                        `
+                    }
+                }
+            }
+            for (item of document.querySelectorAll('.item-container')){
+                hoverSmallColor(item)
+                item.addEventListener('mouseover',()=>{
+                    cursor.style.zIndex = '1'
+                })
+                item.addEventListener('mouseout',()=>{
+                    cursor.style.removeProperty('z-index')
+                })
+            }
+        }
+
+        window.addEventListener("pageshow", function(){
+            document.querySelector('.section-title').classList.add('opacity-visible')
+            showContainers()
+        });
+    </script>
+{% endblock %}

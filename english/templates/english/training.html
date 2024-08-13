@@ -1,0 +1,148 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Entraînement</title>
+    <link rel="stylesheet" href="{% static 'css/quizz.css'%}?{% now 'U' %}">
+    <link rel="stylesheet" href="{% static 'css/training.css'%}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+    
+    <div class="card-container">
+        <div class="flip-card">
+            <div class="card hide" onclick="flip()"> 
+                <div class="background-card" id="background-card-1"></div>    
+                <div class="background-card" id="background-card-2"></div>    
+                <div class="background-card" id="background-card-3"></div>            
+                <div class="flip-card-front">   
+                    <p class="card-text">some text</p>
+                    <p class="click-message opacity-visible">click</p>
+                </div>
+                <div class="flip-card-back">   
+                    <p class="card-text">some text</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="typing-container">
+        <button class="navigation-button" onclick="changeCard(-1)"><img src="{% static 'images/arrow.svg' %}" alt=""></button>
+        <p class="card-number">1/15</p>
+        <button class="navigation-button" onclick="changeCard(1)"><img src="{% static 'images/arrow.svg' %}" alt=""></button>
+    </div>
+
+    <script>
+        for (arrow of document.querySelectorAll('.navigation-button')){
+            hover100(arrow)
+        }
+
+        document.querySelector('.card').addEventListener("mouseover", function() {
+            cursor.style.zIndex = '1'
+        }, false);
+        document.querySelector('.card').addEventListener("mouseout", function() {
+            cursor.style.removeProperty('z-index')
+        }, false);
+        hoverSmallColor(document.querySelector('.card'))
+
+        const card = document.querySelector('.card')
+        const backgroundCards = document.querySelectorAll('.background-card')
+        
+        function hide(){
+            for (text of texts){
+                text.classList.remove('opacity-visible')
+            }
+            n = backgroundCards.length
+            for (i=0;i<n;i++){
+                let card = backgroundCards[i]
+                card.classList.remove(`background-card-${i+1}`)
+            }
+            card.classList.add(`hide`)
+        }
+        function show(){
+            n = backgroundCards.length
+            for (i=0;i<n;i++){
+                let card = backgroundCards[i]
+                card.classList.add(`background-card-${i+1}`)
+            }
+            card.classList.remove(`hide`)
+            setTimeout(()=>{
+                for (text of texts){
+                    text.classList.add('opacity-visible')
+                }
+            },150)
+        }
+
+        
+        window.addEventListener("pageshow", ()=>{
+            show()
+        });
+
+        let cards = [
+            {% for card in lesson.cards.all %}
+                {
+                    'text1':'{{card.text1}}',
+                    'text2':'{{card.text2}}',
+                },
+            {% endfor %}
+        ]
+        let cardsLength = cards.length
+        let keys = ['text1','text2']
+        let keyIndex = 0
+
+        function updateCard(){
+            hide()
+            cardNumber.innerHTML = `${currentIndex+1}/${cards.length}`
+            setTimeout(function () {
+                texts[0].innerHTML = cards[currentIndex][keys[keyIndex]];
+                texts[1].innerHTML = cards[currentIndex][keys[(keyIndex+1)%2]];
+                show()
+            }, 300);  
+        }
+
+        function flip(){
+            document.querySelector('.click-message').classList.remove('opacity-visible')
+            keyIndex = (keyIndex + 1) % keys.length
+            if (!card.style.transform){
+                card.style.transform  = 'rotateY(180deg)'
+            } else {
+                card.style.removeProperty('transform')
+            }
+        }
+
+        function changeCard(k){
+            currentIndex = (currentIndex + k) % cards.length
+            if (currentIndex < 0){
+                currentIndex = cards.length - 1
+            }
+            keyIndex = 0
+            updateCard()
+        }
+
+        function start(){
+            texts[0].innerHTML = cards[currentIndex][keys[keyIndex]];
+            texts[1].innerHTML = cards[currentIndex][keys[(keyIndex+1)%2]];
+            cardNumber.innerHTML = `${currentIndex+1}/${cards.length}`
+        }
+
+        const texts = document.querySelectorAll('.card-text');
+        const cardNumber = document.querySelector('.card-number')
+        document.querySelector('.typing-container').classList.add('opacity-visible')
+
+        document.onkeydown = checkKey;
+        function checkKey(e){ 
+            if (e.keyCode == 37){
+                changeCard(-1)
+            } 
+            if (e.keyCode == 39){
+                changeCard(1)
+            }
+            if (e.keyCode == 13 || e.keyCode == 32){
+                flip()
+            }
+        }
+
+        let currentIndex = 0;
+        start()
+
+        function refresh_page(){
+            location.reload()
+        }
+    </script>
+{% endblock %}

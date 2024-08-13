@@ -1,0 +1,40 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+<title>Bubble - {{request.user.username}}</title>
+    <link rel="stylesheet" href="{% static 'css/logs.css' %}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+
+
+    <div class="form-container">
+        <p class="title">Profil</p>
+        <div class="profile-inputs">
+            <input type="text" name="" id="" value="{{user.username}}" placeholder="Nom d'utilisateur" readonly>
+            <input type="email" name="" id="" value="{{user.email}}" placeholder="Email" readonly>
+            <button onclick="changeWindow(`{% url 'password_reset' %}`,'color')" class="sub-button">Modifier le mot de passe </button>
+            <button onclick="changeWindow(`{% url 'logout' %}`,'color')" class="sub-button">Se déconnecter</button>
+        </div>
+    </div>
+    <script>
+        document.querySelector('.form-container').addEventListener('mouseenter',()=>{
+            cursor.classList.add('color-cursor')
+        })
+        document.querySelector('.form-container').addEventListener('mouseleave',()=>{
+            cursor.classList.remove('color-cursor')
+        })
+        for (input of document.querySelector('.profile-inputs').querySelectorAll('input')){
+            hoverSmallWhite(input)
+        }
+        for (input of document.querySelectorAll('.sub-button')){
+            input.addEventListener('mouseenter',()=>{
+                cursor.classList.add('small-cursor')
+            })
+            input.addEventListener('mouseleave',()=>{
+                cursor.classList.remove('small-cursor')
+            })
+        }
+        window.addEventListener('pageshow',()=>{
+            document.querySelector('.form-container').classList.add('opacity-visible')
+        })
+    </script>
+{% endblock %}

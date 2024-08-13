@@ -1,0 +1,134 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - {{group.name}}</title>
+    <link rel="stylesheet" href="{% static 'css/lesson_english.css' %}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+
+    
+    <div class="title-container">
+        <p class="title">{{group.name}}</p>
+        <div class="button-container">
+            {% if not group or request.user in group.admins.all %}
+                <button id="edit-button" class="button" onclick="changeWindow('{{ request.build_absolute_uri }}/edit','color')"><img src="{% static 'images/edit.svg' %}" alt=""></button>
+                <div class="tooltip">
+                    <button id="share-button" class="button" onclick="share()">  
+                        <img src="{% static 'images/share.svg' %}" alt="">
+                    </button>
+                    <span id="copy-message">Url copié</span>
+                </div>       
+                
+                {% if request.user == group.super_admin %}
+                        <div class="tooltip">
+                            <button id="delete-button" class="button" onclick="delete_group()">  
+                                <img src="{% static 'images/trash.svg' %}" alt="">
+                            </button>
+                            <div id="delete-container" class="delete-container">
+                                <p>Est-ce que tu veux vraiment supprimer ce groupe ?</p>
+                                <div class="delete-menu">
+                                    <button onclick="changeWindow(`{% url 'delete-group' group_id=group.id %}`,'white')" id="confirm-delete-button">Supprimer</button>
+                                    <button onclick="cancel_delete()" id="cancel-button">Annuler</button>
+                                </div>
+                            </div>
+                        </div>
+                {% else %}
+                        <div class="tooltip">
+                            <button id="delete-button" class="button" onclick="quit_group()">  
+                                <img src="{% static 'images/exit.svg' %}" alt="">
+                            </button>
+                            <div id="quit-container" class="delete-container">
+                                <p>Est-ce que tu veux vraiment quitter le groupe ?</p>
+                                <div class="delete-menu">
+                                    <button onclick="changeWindow(`{% url 'quit-group' group_id=group.id %}`,'white')" id="confirm-delete-button">Quitter</button>
+                                    <button onclick="cancel_quit()" id="cancel-button">Annuler</button>
+                                </div>
+                            </div>
+                        </div>
+                {% endif %}
+            {% else %}
+                    <div class="tooltip">
+                        <button id="delete-button" class="button" onclick="quit_group()">  
+                            <img src="{% static 'images/exit.svg' %}" alt="">
+                        </button>
+                        <div id="quit-container" class="delete-container">
+                            <p>Est-ce que tu veux vraiment quitter le groupe ?</p>
+                            <div class="delete-menu">
+                                <button onclick="changeWindow(`{% url 'quit-group' group_id=group.id %}`,'white')" id="confirm-delete-button">Quitter</button>
+                                    <button onclick="cancel_quit()" id="cancel-button">Annuler</button>
+                            </div>
+                        </div>
+                    </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="navigator-container">
+        <button id="user-lessons-button" class="page-button" onclick="changeWindow(`{% url 'groups' %}`,'white')">Retour</button>
+        <button id="users-button" class="page-button" onclick="changeWindow(`{% url 'group-members' group_id=group.id%}`,'white')">Membres</button>
+    </div>
+
+
+    <script>
+        for (button of document.querySelectorAll('.button')){
+            hover100(button)
+         } 
+        for (button of document.querySelectorAll('.page-button')){
+            hover100(button)
+         } 
+        
+        document.querySelector('.delete-container').addEventListener("mouseover", function() {
+            cursor.classList.add('color-cursor')
+            cursor.style.zIndex = '2'
+            cursor.classList.add('small-cursor')
+        }, false);
+        document.querySelector('.delete-container').addEventListener("mouseout", function() {
+            cursor.classList.remove('color-cursor')
+            cursor.classList.remove('small-cursor')
+            cursor.style.removeProperty('z-index')
+        }, false);
+
+        window.addEventListener("pageshow", ()=>{
+            document.querySelector('.transition-div').style.visibility = 'hidden'
+            document.querySelector('.transition-div').classList.remove('transition-active')
+            document.querySelector('.title-container').classList.add('opacity-visible')
+            for (button of document.querySelectorAll('.page-button')){
+                button.classList.add('opacity-visible')
+            }
+        }, false);
+
+
+        function share(){  
+            const copyMessage = document.querySelector('#copy-message')   
+            url = '{{ request.build_absolute_uri }}/share/{{ group.share_id }}'
+            
+            const elem = document.createElement('textarea');
+            elem.value = url;
+            document.body.appendChild(elem);
+            elem.select();
+            document.execCommand('copy');
+            document.body.removeChild(elem);
+            
+            copyMessage.style.visibility = 'visible'
+            setTimeout(function () {
+                copyMessage.style.visibility = 'hidden'
+            }, 3000);
+        }
+
+        function delete_group(){
+            deleteContainer.style.visibility = 'visible'
+        }
+        function cancel_delete(){
+            deleteContainer.style.visibility = 'hidden'
+        }
+
+        function quit_group(){
+            quitContainer.style.visibility = 'visible'
+        }
+        function cancel_quit(){
+            quitContainer.style.visibility = 'hidden'
+        }
+
+        const copyMessage = document.getElementById('copy-message')
+        const deleteContainer = document.getElementById('delete-container')
+        const quitContainer = document.getElementById('quit-container')
+    </script>
+{% endblock %}

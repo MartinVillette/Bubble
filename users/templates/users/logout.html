@@ -1,0 +1,27 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Déconnection</title>
+    <link rel="stylesheet" href="{% static 'css/logs.css' %}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+    <div id="disconnect-message">
+        <p >Tu as été déconnecté</p>
+        <p>Tu vas être redirigé dans <span></span>s</p>
+    </div>
+    
+    <script>
+        window.onclick = function(){
+            window.location.href = "{% url 'home' %}" 
+        }
+
+        let counter = 3
+        document.querySelector('span').innerHTML = counter
+        setInterval(function(){
+            counter--
+            document.querySelector('span').innerHTML = counter
+            if (counter == 0){
+                window.location.href = "{% url 'home' %}" 
+            }
+        }, 1000);
+    </script>
+{% endblock %}

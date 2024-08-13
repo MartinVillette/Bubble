@@ -1,0 +1,547 @@
+body{
+    overflow-y: hidden;
+}
+.navigator-container{
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+}
+.page-button{
+    background:none;
+    border:none;
+    padding:50px;
+    opacity: 0;
+    font-size:30px;
+    transition: .2s;
+    color: rgba(255,255,255, .5);
+}
+#citation-button:hover {
+    color: rgba(var(--color-rgb), 1);
+}
+#back-button {
+    color:rgba(var(--color-rgb), .8);
+    left:0;
+    top:50px;
+    position: fixed;
+}   
+#back-button:hover {
+    color: white;
+    z-index: 1;
+}
+
+.title-container{
+    margin: 0 auto;
+    margin-top:40vh;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    opacity: 0;
+    transition: .2s;
+}
+.title{
+    color:white;
+    font-size: 50px;
+    font-family:'Poppins SemiBold';
+    font-style:italic;
+    text-align: center;
+}
+.menu{
+    width:max-content;
+    border:3px solid rgba(255,255,255,.1);
+    border-radius:20px;
+    margin: 0 auto;
+    margin-top:20px;
+    text-align: center;
+    position: relative;
+    padding:20px;
+    display: flex;
+    flex-direction: row;
+    transition:.2s;
+}
+.menu-message{
+    position: absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%,-50%);
+    font-size: 25px;
+    font-style: italic;
+    opacity:.2;
+    color:white;
+}
+.menu:hover .menu-message {
+    display: none;
+}
+.menu-button:not(:first-child){
+    margin-left:30px;
+}
+.menu-button {
+    visibility: hidden;
+    position: relative;
+    width:200px;
+    height:100px;
+    background: none;
+    overflow: hidden;
+    /* border:3px solid var(--color); */
+    background: var(--color);
+    border-radius:20px;
+    color:var(--color);
+    /* color:white; */
+    text-align: center;
+    font-size: 20px;
+    font-style:italic;
+}
+.menu-button:hover{
+    color:white;
+}
+.menu:hover .menu-button{
+    visibility: visible;
+}
+.menu-button p{
+    position: absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%,-50%);
+    font-family: 'Poppins SemiBold';
+}
+
+
+.lesson-quote-container{
+    width:60%;
+    margin:0 auto;
+    margin-top:40vh;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    margin-bottom:200px;
+    transition: margin-top 1s;
+}
+.lesson-quote-title-container{
+    width: 100%;
+    text-align: center;
+    margin-bottom:50px;
+    font-style: italic;
+}
+.quote-list-title{
+    color:var(--text-color);
+    font-size:50px;
+    text-align: center;
+    font-family: 'Poppins SemiBold';
+}
+.quote-list{
+    position: relative;
+    width:calc(100% - 40px);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background:rgba(var(--color-rgb), .2);
+    color:var(--text-color);
+    padding:20px;
+    border-radius:30px;
+    transition: .2s;
+    opacity: 0;
+}
+.quote-list img{
+    filter: invert(62%) sepia(54%) saturate(513%) hue-rotate(195deg) brightness(102%) contrast(101%);
+}
+.quote-list:not(:first-child){
+    margin-top: 20px;
+}
+.quote-list:hover{
+    background:rgba(var(--color-rgb), .3);
+}
+.quote-active{
+    color:white;
+    background:rgba(var(--color-rgb), .8);
+}
+.quote-active:hover {
+    background:rgba(var(--color-rgb), 1);
+}
+.quote-active img{
+    filter:none;
+}
+
+.quote-list-content{
+    display: grid;
+    grid-template-columns: auto 40px 40px 40px ;
+    align-items:center;
+    width:100%;
+}
+.quote-state-input{
+    display: none;
+}
+.quote-list-content img{
+    padding:10px;
+    height:20px;
+    margin: 0 auto;
+    text-align: center;
+}
+.quote-container{
+    padding:20px 30px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+.quote {
+    min-width: 100px;
+    font-size: 20px;
+    font-family: 'Poppins SemiBold';
+}
+.description-container{
+    display: flex;
+    flex-direction: row;
+    margin-top:10px;
+    align-items: baseline;
+    opacity: .8;
+}
+.author{
+    font-size: 17px;
+    font-family: 'Poppins SemiBold';
+}
+.page{
+    margin-left:20px;
+    font-size: 15px;
+}
+.opacity-visible{
+    opacity: 1 !important;
+}
+.bottom-bar{
+    width:100%;
+    background:white;
+    position: fixed;
+    left:0;
+    bottom:0;
+    opacity: 0;
+    transition: .2s;  
+    padding:20px 0;
+}
+.bottom-bar-mobile {
+    display: none;
+    width:100%;
+    border-radius: 15px 15px 0 0;
+    background:var(--color);
+    position: fixed;
+    left:0;
+    bottom:0;
+    transition: .2s;  
+    padding:20px 0;
+}
+.navigation-container{
+    display: flex;
+    flex-direction: row;
+    width:50%;
+    align-items: center;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+}
+.navigation-container img{
+    height: 20px;
+    filter: var(--filter);
+    padding:10px;
+}
+.navigation-container img:hover{
+    filter: none;
+}
+.add-button{
+    color:rgba(var(--text-color-rgb), .8);
+    font-size: 25px;
+    font-style: italic;
+    transition: .2s;
+    opacity: 0;
+}
+.add-button:hover{
+    color:white;
+}
+.quote-tag-container{
+    grid-area: 2 / 1 / 3 / 5;
+    margin-top:10px;
+    display:flex;
+    flex-direction: row;
+    align-items: baseline;
+    transition: .2s;
+}
+.quote-tag {
+    background:white;
+    color:var(--text-color);
+    padding:5px 10px;
+    border-radius: 5px;
+    margin-left:10px;
+    display: flex;
+    align-items: center;
+}
+.quote-tag img{
+    filter:var(--filter);
+    height:10px;
+    padding:0;
+    margin-right: 5px;
+    transition:.2s;
+}
+.quote-tag img:last-child{
+    margin-right: 0;
+    margin-left:5px;
+}
+.quote-tag:hover .tag{
+    color:var(--wrong-color);
+}
+.quote-tag:hover img{
+    filter:var(--filter-wrong);
+}
+
+.quote-selected {
+    background: rgba(var(--text-color-rgb),.9) !important;
+}
+.quote-selected .quote, .quote-selected .author,.quote-selected .page {
+    color:white;
+}
+.quote-selected img {
+    filter:none;
+}
+
+.groups-container{
+    grid-area: 3 / 1 / 3 / 5;
+    margin-top:10px;
+    display:none;
+    flex-direction: row;
+    align-items: baseline;
+    transition: .2s;
+}
+.groups-container *{
+    margin-left:10px;
+}
+.group-label{
+    background:white;
+    color:var(--text-color);
+    padding:5px 10px;
+    border-radius: 5px;
+}
+
+.tag {
+    color:var(--text-color);
+    width:100%;
+    font-size: 15px;
+    font-family: "Poppins Semibold";
+    font-style:italic;
+    transition: color .2s;
+}
+.add-tag-button{
+    margin-top:5px;
+}
+.tag-input{
+    margin-top:5px;
+    padding:0 10px;
+    color:var(--text-color);
+    font-size: 17px;
+}
+.tag-input::placeholder{
+    color:var(--text-color);
+    font-size: 15px;
+}
+
+.navigation-container{
+    margin-bottom:20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+}
+.inputs-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    visibility: hidden;
+    transition: .2s;
+    opacity: 0;
+}
+.filter-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: right;
+}
+.filter-select{
+    background:var(--color);
+    color:white;
+    border-radius:10px;
+    padding:10px 20px;
+    border:none;
+    outline:none;
+    font-size:15px;
+}
+.filter-select:not(:first-child){
+    margin-left:10px;
+}
+.filter-select option{
+    font-size:12px;
+}
+.tag-bar-container {
+    position: relative;
+}
+.tag-bar-item-container {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    background:white;
+    width: 100%;
+    border-radius:15px;
+    margin-top: 5px;
+}
+.tag-bar-item{
+    color:var(--text-color);
+    font-size:15px;
+    text-align: left;
+    padding:5px 20px;
+}
+
+.tag-bar{
+    /* background:var(--color); */
+    /* border: 2px solid var(--color); */
+    padding:10px 20px;
+    border-radius: 10px;
+    color:var(--text-color);
+    font-size:15px;
+    text-align: left;
+    background:var(--color);
+    color:white;
+}
+.tag-bar::placeholder{
+    color:var(--text-color);
+    font-size:15px;
+    font-style: italic;
+    opacity: .5;
+    color:white;
+}
+
+@media screen and (max-width:1500px) {
+    .navigation-container{
+        flex-direction: column;
+        align-items:flex-start;
+    }
+    .inputs-container{
+        margin-top:10px;
+        order:1;
+    }
+    .filter-container{
+        order:0;
+    }
+}
+@media screen and (max-height:800px) {
+    .quote-list{
+        padding:0;
+        padding-bottom:5px;
+        border-radius: 15px;
+    }
+    .quote{
+        font-size:17px;
+    }
+}
+
+@media screen and (max-width:800px) {
+    .title{
+        font-size: 35px;
+    }
+    .bottom-bar-mobile {
+        display:block;
+    }
+    .bottom-bar{
+        display: none !important;
+    }
+    .quote-list{
+        padding:10px;
+        width: 100%;
+        border-radius: 15px;
+    }
+    .quote{
+        font-size:17px;
+    }
+    .page-button{
+        font-size:20px;
+        padding:30px;
+    }
+    .quote-list-content img{
+        height:17px;
+        padding:7px;
+    }
+    .quote-tag img{
+        height:10px;
+    }
+    .title-container{
+        margin-top:30vh;
+    }
+    .menu{
+        flex-direction: column;
+    }
+    .menu-message{
+        display: none;
+    }
+    .menu-button{
+        visibility: visible;
+        background: white;
+        width: 175px;
+        height: 100px;
+    }
+    .menu-button p {
+        font-size: 17px;
+    }
+    .menu-button:not(:first-child){
+        margin-top:10px;
+        margin-left:0;
+    }
+    .lesson-quote-container{
+        width:80%;
+    }
+    .tag{
+        font-size: 13px;
+    }
+    .filter-select{
+        font-size:13px;
+    }
+    .filter-select option{
+        font-size:11px;
+    }
+    .tag-bar, .tag-bar::placeholder{
+        font-size:13px;
+    }
+    .tag-bar-item{
+        font-size:12px;
+    }
+}
+
+@media screen and (max-width:600px){
+    .title-container {
+        margin-top: 25vh;
+    }
+    .quote{
+        font-size: 15px;
+    }
+    .author{
+        font-size:12px;
+    }
+    .page{
+        font-size:10px;
+    }
+    .quote-list-content img{
+        height:15px;
+        padding:5px;
+    }
+    .quote-container{
+        padding:10px;
+    }
+    .quote-list-content{
+        grid-template-columns: auto 30px 30px 30px;
+    }
+    .navigation-container img {
+        width: 20px;
+    }
+    .quote-tag-container{
+        margin-top:0px;
+    }
+    .quote-tag img{
+        height:10px;
+    }
+    .tag {
+        font-size:10px;
+    }
+}

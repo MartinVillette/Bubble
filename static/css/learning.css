@@ -1,0 +1,52 @@
+.typing-container{
+    flex-direction: row;
+}
+.card-number{
+    color:white;
+    font-size: 20px;
+    font-style: 'Poppins SemiBold';
+    font-style: italic;
+    margin:0 50px;
+}
+.navigation-button img{
+    height:30px;
+}
+.navigation-button img:hover{
+    filter: invert(62%) sepia(54%) saturate(513%) hue-rotate(195deg) brightness(102%) contrast(101%);
+}
+.navigation-button:first-child img{
+    transform: rotateY(180deg);
+}
+.card{
+    color: var(--text-color);
+}
+.card-content{
+    /* padding:50px; */
+    height:calc(100% - 100px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding:50px;
+    opacity: 0;
+    transition: .2s;
+}
+.description-container{
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    margin-top:10px;
+}
+.quote{
+    font-family: 'Poppins SemiBold';
+    font-style:italic;
+    font-size:20px;
+}
+.author{
+    font-size:17px;
+}
+.page {
+    font-size:15px;
+    margin-left:10px;
+    opacity: .8;
+    font-style: italic;
+}

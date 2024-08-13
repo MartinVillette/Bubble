@@ -1,0 +1,163 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - {{lesson.title}}</title>
+    <link rel="stylesheet" href="{% static 'css/lesson_english.css'%}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+        <div class="title-container">
+            <p class="title">{{lesson.title}}</p>
+            {% if request.user != lesson.author %}
+            <p class="lesson-description">De {{lesson.author}}</p>
+            {% endif %}
+            <div class="button-container">
+                {% if request.user == lesson.author %}
+                <button id="edit-button" class="button" onclick="changeWindow('{{ request.build_absolute_uri }}/edit','white')"><img src="{% static 'images/edit.svg' %}" alt=""></button>
+                <div class="tooltip">
+                    <button id="share-button" class="button" onclick="share()">  
+                        <img src="{% static 'images/share.svg' %}" alt="">
+                    </button>
+                    <span id="copy-message">Url copié</span>
+                </div>                
+                <div class="tooltip">
+                    <button id="delete-button" class="button" onclick="deleteLesson()">  
+                        <img src="{% static 'images/trash.svg' %}" alt="">
+                    </button>
+                    <div id="delete-container" class="delete-container">
+                        <p>Est-ce que tu veux vraiment supprimer cette leçon ?</p>
+                        <div class="delete-menu">
+                            <button onclick="confirmDeleteLesson(`{% url 'delete-lesson-english' lesson_id=lesson.id %}`,'color')" id="confirm-delete-button">Supprimer</button>
+                            <button onclick="cancelDelete()" id="cancel-button">Annuler</button>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                    <button id="copy-button" class="button" onclick="changeWindow(`{% url 'copy-lesson-english' lesson_id=lesson.id %}`,'white')">  
+                        <img src="{% static 'images/copy.svg' %}" alt="">
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="menu opacity-visible">
+            <p class="menu-message">Regarde ici</p>
+            <div class="menu-button" onclick="changeWindow(`{% url 'lesson-training-english' lesson_id=lesson.id %}`,'color')">
+                <p>Apprendre</p>
+            </div>
+            <div class="menu-button" onclick="changeWindow(`{% url 'lesson-quizz-english' lesson_id=lesson.id %}`),'color'">
+                <p>Quizz</p>
+            </div>
+        </div>
+        <div class="navigator-container">
+            {% if request.user.is_authenticated %}
+            <button id="back-button" class="page-button" onclick="changeWindow(`{% url 'user-lessons-english' username=user.username %}`,'color')">Retour</button>
+            {% else %}
+            <button id="back-button" class="page-button" onclick="changeWindow(`{% url 'home' %}`,'color')">Retour</button>
+            {% endif %}
+            <button id="card-button" class="page-button" onclick="changeWindow(`{% url 'lesson-english-cards' lesson_id=lesson.id %}`,'white')">Cartes</button>
+        </div>
+
+
+        <div class="loading-screen">
+            <div class="loading-container">
+                <div class="loading-animation">
+                    <div class='bubble'></div>
+                    <div class='bubble'></div>
+                    <div class='bubble'></div>
+                </div>
+                <p class="loading-text">Suppression de la leçon</p>
+                <p class="loading-subtext">Ne fermez pas la page</p>
+            </div>
+        </div>
+
+    <script>
+        for (button of document.querySelectorAll('.button')){
+            hover100(button)
+        }
+        document.querySelector('.menu').addEventListener("mouseover", function() {
+            cursor.classList.add('cursor-hover-300')
+        });
+        document.querySelector('.menu').addEventListener("mouseout", function() {
+            cursor.classList.remove('cursor-hover-300')
+        });
+        
+        {% if request.user == lesson.author %}
+        hoverSmallColor(document.querySelector('.delete-container'))
+        document.querySelector('.delete-container').addEventListener("mouseover", function() {
+            cursor.style.zIndex = '2'
+        });
+        document.querySelector('.delete-container').addEventListener("mouseout", function() {
+            cursor.style.removeProperty('z-index')
+        });
+        {% endif %}
+        
+        for (button of document.querySelectorAll('.page-button')){
+            hover100(button)
+         } 
+
+        window.addEventListener("pageshow", ()=>{
+            document.querySelector('.loading-screen').style.display = 'none'
+            document.querySelector('.transition-div').style.visibility = 'hidden'
+            document.querySelector('.transition-div').classList.remove('transition-active')
+            document.querySelector('.title-container').classList.add('opacity-visible')
+            for (button of document.querySelectorAll('.page-button')){
+                button.classList.add('opacity-visible')
+            }
+        }, false);
+
+
+        window.onbeforeunload = function(){
+            document.querySelector('.title-container').classList.remove('opacity-visible')
+            for (button of document.querySelectorAll('.page-button')){
+                 button.classList.remove('opacity-visible')
+            }
+        };
+
+        function share(){    
+            const copyMessage = document.querySelector('#copy-message')
+            url = '{{ request.build_absolute_uri }}/share/{{ lesson.share_id }}'
+            // navigator.clipboard.writeText(url)
+            const elem = document.createElement('textarea');
+            elem.value = url;
+            document.body.appendChild(elem);
+            elem.select();
+            document.execCommand('copy');
+            document.body.removeChild(elem);
+            
+
+            copyMessage.style.visibility = 'visible'
+            setTimeout(function () {
+                copyMessage.style.visibility = 'hidden'
+            }, 3000);
+        }
+
+        function deleteLesson(){
+            document.getElementById('delete-container').style.visibility = 'visible'
+        }
+        function cancelDelete(){
+            document.getElementById('delete-container').style.visibility = 'hidden'
+        }
+
+        function confirmDeleteLesson(url, color){
+            cancelDelete()
+            const transitionDiv = document.querySelector('.transition-div')
+            transitionDiv.style.background = 'var(--color)'
+            transitionDiv.style.visibility = 'visible'
+            transitionDiv.style.left = event.pageX + 'px';
+            transitionDiv.style.top = event.pageY + 'px';
+            transitionDiv.classList.add('transition-active')
+            document.querySelector('body').style.overflowY = 'hidden'
+            setTimeout(() => {
+                document.querySelector('.loading-screen').style.display = 'block'
+                setTimeout(() => {
+                    document.querySelector('.loading-container').classList.add('opacity-visible')
+                },100)
+                transitionDiv.style.visibility = 'hidden'
+                window.location.href = url
+            }, 1000);
+        }
+    
+        let cardNumber = document.getElementsByClassName('card-number')
+        for (i=0;i<cardNumber.length;i++){
+            cardNumber[i].innerHTML = `${i+1}.`
+        }
+    </script>
+{% endblock %}

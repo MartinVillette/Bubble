@@ -1,0 +1,140 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Membres {{group.name}}</title>
+    <link rel="stylesheet" href="{% static 'css/lesson_english.css' %}?{% now 'U' %}">
+    <link rel="stylesheet" href="{% static 'css/group.css' %}?{% now 'U' %}">
+    <script src="{% static 'scripts/white_page.js' %}"></script>
+
+    <div class="users">
+        <p class="users-title">Membres</p>
+        <div class="users-container">
+            <div class="user-container" id="${user}">
+                <div class="username">
+                    <p class="super-admin">{{group.super_admin}}</p>
+                    <p class="super-admin-text">super admin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="back-button" class="page-button" onclick="changeWindow(`{% url 'group-page' group_id=group.id %}`)">Retour</button>
+
+    <script>
+        hover100(document.querySelector('.page-button'))
+        hoverSmallWhite(document.querySelector('.users-container'))
+
+        window.addEventListener("pageshow", ()=>{
+            document.querySelector('.users').classList.add('opacity-visible')
+            for (button of document.querySelectorAll('.page-button')){
+                button.classList.add('opacity-visible')
+            }
+        }, false);
+
+        function remove_user(elem){
+            let container = elem.parentNode.parentNode
+            let user = container.id
+            
+            delete users[user]
+            container.remove()
+        }
+
+        function toggle_admin(elem){
+            let container = elem.parentNode.parentNode
+            let user = container.id
+
+            let crown = container.children[1].children[0].children[0]
+            let usernameContainer = container.children[0]
+            if (users[user] == 'a'){
+                users[user] = 'u'
+                crown.setAttribute('src','{% static "images/crown.svg" %}')
+                usernameContainer.innerHTML = `
+                    <p class="user">${user}</p>
+                    <p class="admin-text" style="visibility:hidden">admin</p>
+                `
+            } else {
+                users[user] = 'a'
+                crown.setAttribute('src','{% static "images/crown_yellow.svg" %}')
+                usernameContainer.innerHTML = `
+                    <p class="admin">${user}</p>
+                    <p class="admin-text">admin</p>
+                `
+            }  
+        }
+
+        const copyMessage = document.getElementById('copy-message')
+        const deleteContainer = document.getElementById('delete-container')
+        const quitContainer = document.getElementById('quit-container')
+
+        let users = {
+            {% for user in group.users.all %}
+                {% if user != group.super_admin %}
+                    {% if user in admins %}
+                        '{{user}}':'a',
+                    {% else %}
+                        '{{user}}':'u',
+                    {% endif%}
+                {% endif %}
+            {% endfor %}
+        }
+        const initUsers = {...users}
+        const usersContainer = document.querySelectorAll('.users-container')[0]
+
+        for (user of Object.keys(users)){
+            if (users[user] == 'a'){
+                usersContainer.innerHTML += `
+                <div class="user-container" id="${user}">
+                    <div class="username">
+                        <p class="admin">${user}</p>
+                        <p class="admin-text">admin</p>
+                    </div>
+                    {% if request.user in admins %}
+                    <div class="user-menu">
+                        <button class="admin-button" onclick="toggle_admin(this)"><img src="{% static 'images/crown_yellow.svg' %}" alt=""></button>
+                        <button class="remove-user-button" onclick="remove_user(this)"><img src="{% static 'images/trash.svg' %}" alt=""></button>
+                    </div>
+                    {% endif %}
+                </div>
+                `
+            } else {
+                usersContainer.innerHTML += `
+                <div class="user-container" id="${user}">
+                    <div class="username">
+                        <p class="user">${user}</p>
+                        <p class="admin-text" style="visibility:hidden">admin</p>
+                    </div>
+                    {% if request.user in admins %}
+                    <div class="user-menu">
+                        <button class="admin-button" onclick="toggle_admin(this)"><img src="{% static 'images/crown.svg' %}" alt=""></button>
+                        <button class="remove-user-button" onclick="remove_user(this)"><img src="{% static 'images/trash.svg' %}" alt=""></button>
+                    </div>
+                    {% endif %}
+                </div>
+                `
+            }
+        }
+
+        function sendData(){
+            let data = new FormData();
+            u = []
+            a = []
+            for (const [user,value] of Object.entries(users)){
+                if (value == 'a'){
+                    a.push(user)
+                }
+                u.push(user)
+            }
+            data.append('users',JSON.stringify(u))
+            data.append('admins',JSON.stringify(a))
+            data.append('csrfmiddlewaretoken','{{csrf_token}}')
+            navigator.sendBeacon('', data)
+            console.log('send')
+        }
+
+        {% if request.user in group.admins.all %}
+        window.addEventListener('beforeunload', function (e) {
+            sendData()
+        });
+        {% endif %}
+    </script>
+{% endblock %}

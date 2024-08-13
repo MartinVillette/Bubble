@@ -1,0 +1,135 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Nouvelle citations</title>
+    <link rel="stylesheet" href="{% static 'css/lesson_french.css'%}?{% now 'U' %}">
+    <link rel="stylesheet" href="{% static 'css/add_quote.css'%}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+
+    <div class="lesson-quote-container">
+        <div class="lesson-quote-title-container">
+            <p class="quote-list-title">Citations</p>
+        </div>
+        <form action="{% url 'add-quote' %}" method="POST" class="form-container">
+            {% csrf_token %} 
+            {{form}}
+            
+        </form>
+        <button class="submit-button" onclick="addQuote()">Ajouter</button>
+        
+        {% if quotes %}
+        <div class="suggestion-container">
+            <p class="suggestion-text">Suggestions</p>
+            {% for quote in quotes %}
+                <div class="quote-list" id="{{quote.id}}" onclick="selectQuote(this)">
+                    <div class="quote-list-content">
+                        <div class="quote-container">
+                            <p class="quote">{{quote.quote}}</p>
+                            <div class="description-container">
+                                <p class="author">{{quote.author}}</p>
+                                <p class="page">{% if quote.page %}p.{{quote.page}}{% endif %}</p>
+                            </div>
+                        </div>
+                        <img src="{% static 'images/edit.svg' %}" alt="" onclick="editQuote(this)">
+                    </div>
+                </div>
+            {% endfor %}
+            
+        </div>
+        <div class="bottom-bar">
+            <button class="submit-button" onclick="addManyQuotes()">Ajouter</button>
+        </div>
+        
+        {% endif %}
+        <button id="back-button" class="page-button" onclick="changeWindow(`{% url 'french-quotes' %}`,'white')">Retour</button>
+
+
+    </div>
+    <script>
+        let quotes = []
+        hoverSmallColor(document.querySelector('.form-container'))
+
+        for (button of document.querySelectorAll('.submit-button')){
+            hover100(button)
+        }
+
+        for (button of document.querySelectorAll('.page-button')){
+            hover100(button)
+        } 
+
+        for (quote of document.querySelectorAll('.quote-list')){
+            quote.classList.add('opacity-visible')
+            hoverSmallColor(quote)
+            quote.addEventListener('mouseover',()=>{
+                cursor.style.zIndex = '1'
+            })
+            quote.addEventListener('mouseout', ()=>{
+                cursor.style.removeProperty('z-index')
+            })
+        }
+
+        {% if quotes %}
+        document.querySelector('.bottom-bar').addEventListener('mouseover',()=>{
+            cursor.style.zIndex = "1"
+        })
+        document.querySelector('.bottom-bar').addEventListener('mouseout',()=>{
+            cursor.style.removeProperty('z-index')
+        })
+        {% endif %}
+        
+        window.addEventListener('pageshow', ()=>{
+            document.querySelector('.lesson-quote-title-container').classList.add('opacity-visible')
+            document.querySelector('#id_quote').placeholder = '"Citation..."'
+            document.querySelector('#id_quote').style.height = "5px";
+            document.querySelector('#id_page').placeholder = "Page..."
+            for (button of document.querySelectorAll('.page-button')){
+                button.classList.add('opacity-visible')
+            }
+        })
+
+        document.querySelector('#id_quote').addEventListener('input',()=>{
+            let element = document.querySelector('#id_quote')
+            document.querySelector('#id_quote').style.height = "5px";
+            element.style.height = (element.scrollHeight)+"px";
+        })
+
+        function editQuote(elem){
+            event.stopPropagation()
+            elem = elem.parentNode
+            document.querySelector('#id_quote').value = elem.querySelector('.quote').innerHTML
+            document.querySelector('#id_author').value = elem.querySelector('.author').innerHTML
+            document.querySelector('#id_page').value = elem.querySelector('.page').innerHTML
+            
+        }
+
+        function addQuote(){
+            document.querySelector('.form-container').submit()
+        }
+
+        function selectQuote(elem){
+            elem.classList.toggle('quote-selected')
+            if (elem.classList.contains('quote-selected')){
+                quotes.push(elem.id)
+                document.querySelector('.bottom-bar').style.display = 'block'
+                document.querySelector('.bottom-bar').classList.add('opacity-visible')
+            } else {
+                let index = quotes.indexOf(elem.id);
+                if (index !== -1) {
+                    quotes.splice(index, 1);
+                }  
+            }
+            if (quotes.length == 0){
+                document.querySelector('.bottom-bar').style.removeProperty('display')
+                document.querySelector('.bottom-bar').classList.remove('opacity-visible')
+            }
+        }
+
+        function addManyQuotes(){
+            let data = new FormData();
+            data.append('quotes',JSON.stringify(quotes))
+            data.append('csrfmiddlewaretoken','{{csrf_token}}')
+            navigator.sendBeacon('', data)
+        }
+
+    </script>
+{% endblock %}

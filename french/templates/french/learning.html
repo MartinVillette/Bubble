@@ -1,0 +1,155 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Apprendre</title>
+    <link rel="stylesheet" href="{% static 'css/quizz.css'%}?{% now 'U' %}">
+    <link rel="stylesheet" href="{% static 'css/learning.css'%}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+    
+    <div class="content-container">
+        <div id="progression-bar"><div id="progression"></div></div>
+        <div class="card-container">
+            <div class="background-card" id="background-card-1"></div>
+            <div class="background-card" id="background-card-2"></div>
+            <div class="background-card" id="background-card-3"></div>
+            <div class="card hide">
+                <div class="card-content">
+                    <p class="quote">quote</p>
+                    <div class="description-container">
+                        <p class="author">author</p>
+                        <p class="page">page</p>
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </div>
+
+    <div class="typing-container">
+        <button class="navigation-button" onclick="changeCard(-1)"><img src="{% static 'images/arrow.svg' %}" alt=""></button>
+        <p class="card-number">1/15</p>
+        <button class="navigation-button" onclick="changeCard(1)"><img src="{% static 'images/arrow.svg' %}" alt=""></button>
+    </div>
+
+    <script>
+        for (arrow of document.querySelectorAll('.navigation-button')){
+            hover100(arrow)
+        }
+
+        document.querySelector('.card').addEventListener("mouseover", function() {
+            cursor.style.zIndex = '1'
+        }, false);
+        document.querySelector('.card').addEventListener("mouseout", function() {
+            cursor.style.removeProperty('z-index')
+        }, false);
+        hoverSmallColor(document.querySelector('.card'))
+
+        const card = document.querySelector('.card')
+        const backgroundCards = document.querySelectorAll('.background-card')
+        
+        function hide(){
+            cardContent.classList.remove('opacity-visible')
+            // quote.classList.remove('opacity-visible')
+            // author.classList.remove('opacity-visible')
+            // page.classList.remove('opacity-visible')
+            
+            n = backgroundCards.length
+            for (i=0;i<n;i++){
+                let card = backgroundCards[i]
+                card.classList.remove(`background-card-${i+1}`)
+            }
+            card.classList.add(`hide`)
+        }
+        function show(){
+            n = backgroundCards.length
+            for (i=0;i<n;i++){
+                let card = backgroundCards[i]
+                card.classList.add(`background-card-${i+1}`)
+            }
+            card.classList.remove(`hide`)
+            setTimeout(()=>{
+                cardContent.classList.add('opacity-visible')
+                // quote.classList.add('opacity-visible')
+                // author.classList.add('opacity-visible')
+                // page.classList.add('opacity-visible')
+            },150)
+        }
+
+        
+        window.addEventListener("load", ()=>{
+            show()
+        });
+
+        let cards = [
+            {% for quote_profile in profile.quotes.all %}
+                {% if quote_profile.active %}
+                {
+                    'quote':'« {{ quote_profile.quote.quote }} »',
+                    'author':'{{ quote_profile.quote.author }}',
+                    {% if quote_profile.quote.page == None %}
+                    'page':'',
+                    {% else %}
+                    'page':'{{ quote_profile.quote.page }}',
+                    {% endif %}
+                },
+                {% endif %}
+            {% endfor %}
+        ]
+
+        function updateCard(){
+            hide()
+            cardNumber.innerHTML = `${currentIndex+1}/${cards.length}`
+            setTimeout(function () {
+                quote.innerHTML = cards[currentIndex]['quote']
+                author.innerHTML = cards[currentIndex]['author']
+                if (cards[currentIndex]['page']){
+                    page.innerHTML = `p.${cards[currentIndex]['page']}`
+                } else {
+                    page.innerHTML = ``
+                }
+                show()
+            }, 300);  
+        }
+
+        function changeCard(k){
+            currentIndex = (currentIndex + k) % cards.length
+            if (currentIndex < 0){
+                currentIndex = cards.length - 1
+            }
+            updateCard()
+        }
+
+        function start(){
+            quote.innerHTML = cards[currentIndex]['quote']
+            author.innerHTML = cards[currentIndex]['author']
+            if (cards[currentIndex]['page']){
+                page.innerHTML = `p.${cards[currentIndex]['page']}`
+            } else {
+                page.innerHTML = ``
+            }
+            cardNumber.innerHTML = `${currentIndex+1}/${cards.length}`
+        }
+
+        const cardContent = document.querySelector('.card-content')
+        const quote = document.querySelector('.quote')
+        const author = document.querySelector('.author')
+        const page = document.querySelector('.page')
+        const cardNumber = document.querySelector('.card-number')
+        document.querySelector('.typing-container').classList.add('opacity-visible')
+
+        document.onkeydown = checkKey;
+        function checkKey(e){ 
+            if (e.keyCode == 37){
+                changeCard(-1)
+            } else if (e.keyCode == 39){
+                changeCard(1)
+            }
+        }
+
+        let currentIndex = 0;
+        start()
+
+        function refresh_page(){
+            location.reload()
+        }
+    </script>
+{% endblock %}

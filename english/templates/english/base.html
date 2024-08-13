@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/icon.svg' %}">
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+</head>
+<body>
+    
+    <nav class="navbar">
+        {% if user.is_authenticated %}
+            <a class="nav-link" href="{% url 'user-lessons-english' username=user.username %}">Anglais</a>
+            <a class="nav-link" href="{% url 'lesson-french' %}">Français</a>
+            <a class="nav-link" href="{% url 'groups' %}">Mes Groupes</a>
+            <a class="nav-link" href="{% url 'profile' %}">{{user.username}}</a>
+        {% endif %}
+    </nav>
+
+    
+
+    <nav class="navbar-mobile">
+        <button id="show-navbar-button" class="navbar-button" onclick="showNav(this)"><img src="{% static 'images/menu.svg' %}" alt=""></button>
+        <button id="hide-navbar-button" class="navbar-button" onclick="hideNav(this)"><img src="{% static 'images/cross.svg' %}" alt=""></button>
+
+        <div class="navbar-mobile-bg"></div>
+        <div class="navbar-mobile-container">
+            {% if user.is_authenticated %}
+            <a class="nav-link" href="{% url 'user-lessons-english' username=user.username %}">Anglais</a>
+            <a class="nav-link" href="{% url 'lesson-french' %}">Français</a>
+            <a class="nav-link" href="{% url 'groups' %}">Mes Groupes</a>
+            <a class="nav-link" href="{% url 'profile' %}">{{user.username}}</a>
+            {% else %}
+                <a class="nav-link" href="{% url 'home' %}">Accueil</a>
+                <a class="nav-link" href="{% url 'login' %}">Se connecter</a>
+            {% endif %}
+        </div>
+        
+    </nav>
+    
+    <div class="transition-div"></div>
+    <div class="cursor"></div>
+
+    <script src="{% static 'scripts/base.js' %}"></script>
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

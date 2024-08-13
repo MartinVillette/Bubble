@@ -1,0 +1,292 @@
+.date-text{
+    font-style: italic;
+    color:var(--second-color);
+    font-size:13px;
+    margin:5px 0;
+}
+
+#copy-message{
+    visibility: hidden;
+    position: absolute;
+    left:45px;
+    top:45px;
+    font-size: 12px;
+    background: white;
+    color:var(--text-color);
+    padding:5px 10px;
+    border-radius: 0 20px 20px 20px;
+    width:max-content;
+}
+.delete-container{
+    visibility: hidden;
+    position: absolute;
+    left:45px;
+    top:45px;
+    font-size: 12px;
+    background: white;
+    color:var(--text-color);
+    padding:20px 20px;
+    border-radius: 0 15px 15px 15px;
+    width:200px;
+    z-index:1;
+}
+.delete-menu{
+    margin-top:10px;
+}
+#confirm-delete-button {
+    padding:5px 10px;
+    color:white;
+    background: var(--text-color);
+    border-radius: 5px;
+}
+#cancel-button{
+    color:var(--text-color);
+    margin-left:10px;
+}
+
+
+
+
+
+
+
+/* ------------------------------------------- */
+
+.navigator-container{
+    margin: 0 auto;
+    text-align: center;
+}
+.page-button{
+    /* position: absolute; */
+    color:white;
+    background:none;
+    border:none;
+    padding:50px;
+    opacity: 0;
+    font-size:30px;
+    transition: .2s;
+    color: rgba(255,255,255, .5);
+    position: relative;
+}
+
+.page-button:hover {
+    color: rgba(var(--color-rgb), 1);
+}
+#back-button{
+    position: relative;
+    top:0;
+    color:rgba(255,255,255, .5);
+}
+#back-button:hover{
+    color:var(--color);
+}
+/* #back-button img{
+    width:30px;
+}
+#back-button:hover img {
+    filter: invert(62%) sepia(54%) saturate(513%) hue-rotate(195deg) brightness(102%) contrast(101%);
+} */
+.menu{
+    width:max-content;
+    border:3px solid rgba(255,255,255,.1);
+    border-radius:20px;
+    margin: 0 auto;
+    margin-top:20px;
+    text-align: center;
+    position: relative;
+    padding:20px;
+    display: flex;
+    flex-direction: row;
+    transition:.2s;
+}
+.menu-message{
+    position: absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%,-50%);
+    font-size: 25px;
+    font-style: italic;
+    opacity:.2;
+    color:white;
+}
+.menu:hover .menu-message {
+    display: none;
+}
+
+.menu:hover ~ .cursor {
+    width:300px;
+    height:300px;
+}
+.menu-button:not(:first-child){
+    margin-left:30px;
+}
+.menu-button {
+    visibility: hidden;
+    position: relative;
+    width:200px;
+    height:100px;
+    background: none;
+    overflow: hidden;
+    /* border:3px solid var(--color); */
+    background: var(--color);
+    border-radius:20px;
+    color:var(--color);
+    /* color:white; */
+    text-align: center;
+    font-size: 20px;
+    font-style:italic;
+}
+.menu-button:hover{
+    color:white;
+}
+.menu:hover .menu-button{
+    visibility: visible;
+}
+.menu-button p{
+    position: absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%,-50%);
+    font-family: 'Poppins SemiBold';
+}
+.title-container{
+    position: relative;
+    margin: 0 auto;
+    margin-top:40vh;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: .2s;
+}
+.title{
+    color:white;
+    font-size: 50px;
+    font-family:'Poppins SemiBold';
+    font-style:italic;
+    text-align: center;
+}
+.button-container{
+    display: flex;
+    flex-direction: row;
+    margin:0 auto;
+    text-align: center;
+    justify-content: space-evenly;
+    align-items: center;
+}
+.button{
+    padding:10px 30px;
+    opacity: .5;
+}
+.button:focus{
+    opacity: 1;
+}
+.button img{
+    height:30px;
+}
+.button:hover{
+    /* filter: invert(71%) sepia(6%) saturate(3373%) hue-rotate(317deg) brightness(100%) contrast(93%); */
+    /* filter: invert(64%) sepia(12%) saturate(1380%) hue-rotate(318deg) brightness(106%) contrast(92%); */
+    filter: invert(62%) sepia(54%) saturate(513%) hue-rotate(195deg) brightness(102%) contrast(101%);
+    opacity: 1;
+}
+.lesson-page-container{
+    background:var(--color);
+    width:100%;
+    height:100vh;
+    z-index: -100;
+}
+.cards-container{
+    width:60%;
+    margin:0 auto;
+    margin-top:200px;
+    display: flex;
+    flex-direction: column;
+}
+.lesson-description{
+    color:rgba(255, 255, 255, .8);
+    font-size:17px;
+    font-style: italic;
+    text-align: center;
+    margin-top:-5px;
+}
+
+@media screen and (max-height:600px) {
+    .page-button{
+        font-size:20px;
+        padding:30px
+    }
+    .title-container{
+        margin-top:30vh;
+    }
+}
+@media screen and (max-width:1000px){
+    .delete-container{
+        transform: translateX(-100%);
+        border-radius: 15px 0 15px 15px;
+        background: var(--text-color);
+        color:white;
+    }
+    #confirm-delete-button{
+        background:var(--color);
+    }
+    #cancel-button{
+        color:white;
+    }
+}   
+@media screen and (max-width:800px) {
+    .title{
+        font-size: 35px;
+    }
+    .bottom-bar-mobile {
+        display:block;
+    }
+    .bottom-bar{
+        display: none !important;
+    }
+    .quote-list{
+        padding:0;
+        width: 100%;
+        border-radius: 15px;
+    }
+    .quote{
+        font-size:17px;
+    }
+    .page-button{
+        font-size:20px;
+        padding:30px;
+    }
+    .title-container{
+        margin-top:30vh;
+    }
+    
+    .menu{
+        flex-direction: column;
+    }
+    .menu-message{
+        display: none;
+    }
+    .menu-button{
+        visibility: visible;
+        background: white;
+        width: 175px;
+        height: 100px;
+    }
+    .menu-button:not(:first-child){
+        margin-top:10px;
+        margin-left:0;
+    }
+    .button img{
+        height:25px;
+    }
+    .menu-button p {
+        font-size: 17px;
+    }
+}
+
+
+@media screen and (max-width:600px) {
+    .title-container {
+        margin-top: 25vh;
+    }
+}

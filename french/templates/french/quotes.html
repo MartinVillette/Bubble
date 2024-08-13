@@ -1,0 +1,449 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %} 
+    <title>Bubble - Citations</title>  
+    <link rel="stylesheet" href="{% static 'css/lesson_french.css'%}?{% now 'U' %}">
+    <script src="{% static 'scripts/white_page.js' %}"></script>
+
+    <div class="lesson-quote-container">
+        <div class="lesson-quote-title-container">
+            <p class="quote-list-title">Citations</p>
+            <button class="add-button" onclick="changeWindow(`{% url 'add-quote' %}`,'color')">Nouvelle citation +</button>
+        </div>
+        {% if profile.quotes.all %}
+        <div class="navigation-container">
+            <div class="inputs-container">
+                <div class="tag-bar-container">
+                    <input type="input" name="" class="tag-bar" id="" placeholder="Ajouter un tag" onkeydown="searchTag(this)">
+                    <div class="tag-bar-item-container">
+                    </div>
+                </div>
+                <img src="{% static 'images/visible.svg' %}" class="input-img" alt="" onclick="showSelectedActiveQuote()">
+                <img src="{% static 'images/hidden.svg' %}"  class="input-img" alt="" onclick="hideSelectedActiveQuote()">
+                <!-- <img class="share-quote-button" src="{% static 'images/share.svg' %}" alt="" onclick="shareQuote(this)"> -->
+                <img src="{% static 'images/trash.svg' %}"  class="input-img" alt="" onclick="removeQuote(this)">
+            </div>
+            <div class="filter-container">
+                <select name="" id="author-filter" class="filter-select" onchange="filter()">
+                    <option value="" selected>Auteur</option>
+                    <option value="Virgile">Virgile</option>
+                    <option value="Simone Weil">Simone Weil</option>
+                    <option value="Michel Vinaver">Michel Vinaver</option>
+                </select>
+                <select name="" id="tag-filter" class="filter-select" onchange="filter()">
+                    <option value="" selected>Tags</option>
+                    {% for tag in tags %}
+                    <option value="{{tag.tag}}">{{tag.tag}}</option>
+                    {% endfor %}
+                </select>
+                <img src="{% static 'images/filter.svg' %}" alt="">
+            </div>
+
+        </div>
+        {% endif %}
+        <div class="quotes">
+
+        </div>
+    </div>
+    <button id="back-button" class="page-button" onclick="changeWindow(`{% url 'lesson-french' %}`,'color')">Retour</button>
+
+    <script>
+        let initQuotes = [
+            {% for quoteProfile in profile.quotes.all %}
+                {
+                    'active':('{{quoteProfile.active}}' === 'True'),
+                    'author':'{{quoteProfile.quote.author}}',
+                    'html':`
+                    {% if quoteProfile.active %}
+                        <div class="quote-list quote-active" id="{{quoteProfile.quote.id}}" onclick="selectQuote(this)">
+                        {% else %}
+                        <div class="quote-list" id="{{quoteProfile.quote.id}}" onclick="selectQuote(this)">
+                        {% endif %}
+                            <div class="quote-list-content" >
+                                <div class="quote-container">
+                                    <p class="quote">« {{quoteProfile.quote.quote}}  »</p>
+                                    <div class="description-container">
+                                        <p class="author">{{quoteProfile.quote.author}}</p>
+                                        {% if quote.page != None %}
+                                        <p class="page">p.{{quoteProfile.quote.page}}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if quoteProfile.active %}
+                                <img class="status-quote-button quote-visible" src="{% static 'images/visible.svg' %}" alt="" onclick="toggleActiveQuote(this)">
+                                <input type="checkbox" name="" class="quote-state-input" id="" onclick="toggleActiveQuote(this)" checked>
+                                {% else %}
+                                <img class="status-quote-button quote-hidden" src="{% static 'images/hidden.svg' %}" alt="" onclick="toggleActiveQuote(this)">
+                                <input type="checkbox" name="" class="quote-state-input" id="" onclick="toggleActiveQuote(this)" >
+                                {% endif %}
+
+                                <img class="share-quote-button" src="{% static 'images/share.svg' %}" alt="" onclick="shareQuote(this)">
+                                <img class="delete-quote-button" src="{% static 'images/trash.svg' %}" alt="" onclick="removeQuote(this)">
+
+                                <div class="quote-tag-container">
+                                    {% for tag in quoteProfile.tags.all %}
+                                        <p class="quote-tag" onclick="removeTag(this)"><img src='{% static 'images/tags.svg' %}'><span class='tag'>{{tag.tag}}</span><img src='{% static 'images/cross.svg' %}'></p>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="groups-container">
+                                    <p>Partager : </p>
+                                    {% for group in groups %}
+                                        <label for="{{quoteProfile.quote.id}}-{{group.name}}" class="group-label">
+                                            {% if quoteProfile.quote in group.quotes.all %}
+                                            <input type="checkbox" name="{{group.id}}" class="group-input" id="{{quoteProfile.quote.id}}-{{group.name}}" checked>
+                                            {% else %}
+                                            <input type="checkbox" name="{{group.id}}" class="group-input" id="{{quoteProfile.quote.id}}-{{group.name}}">
+                                            {% endif%}
+                                            {{group.name}}
+                                        </label>
+                                    {% endfor %}
+                                    <p class="share-url" onclick="copyUrl('{{quoteProfile.quote.id}}')">Url</p>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                },
+            {% endfor %}
+        ]
+        
+
+        let tags = [
+            {% for tag in tags %}
+                '{{tag.tag}}',
+            {% endfor %}
+        ]
+
+        for (button of document.querySelectorAll('.page-button')){
+            hover100(button)
+        } 
+
+        window.addEventListener("beforeunload", () => {
+            event.preventDefault();
+            sendData()
+        });
+
+        {% if profile.quotes.all%}
+        for (select of document.querySelectorAll('.filter-select')){
+            hoverSmallWhite(select)
+        }
+        hoverSmallWhite(document.querySelector('.tag-bar'))
+        {% endif %}
+        hover100(document.querySelector('.add-button'))
+
+        window.addEventListener("pageshow", ()=>{
+            document.querySelector('.transition-div').style.visibility = 'hidden'
+            document.querySelector('.transition-div').classList.remove('transition-active')
+            for (button of document.querySelectorAll('.page-button')){
+                button.classList.add('opacity-visible')
+            }
+            cursor.style.zIndex = '1'
+            showQuotes()
+        }, false);
+
+        function showQuotes(){
+            updateQuotes()
+            let i = 0
+            let quotes = document.querySelectorAll('.quote-list')
+            function myLoop() {         //  create a loop function
+                setTimeout(function() {   //  call a 3s setTimeout when the loop is called                     //  increment the counter
+                    if (i < Math.min(quotes.length,6)) {           //  if the counter < 10, call the loop function
+                        quotes[i].classList.add('opacity-visible')
+                        hoverSmallWhite(quotes[i])
+                        myLoop();             
+                    } 
+                    i++     
+                              
+                }, 200)
+            }
+            setTimeout(() => {
+                {% if profile.quotes.all %}
+                document.querySelector('.lesson-quote-container').style.marginTop = '20vh'
+                {% endif %}
+                setTimeout(()=>{
+                    document.querySelector('.add-button').classList.add('opacity-visible')
+                }, 200)
+                setTimeout(() => {
+                    myLoop()
+                    for (j=6; j < quotes.length;j++){
+                        quotes[j].classList.add('opacity-visible')
+                        hoverSmallWhite(quotes[j])
+                    }      
+                }, 500);
+                setTimeout(() => {
+                    document.querySelector('body').style.overflowY = 'scroll'
+                }, 1000);
+            }, 200);    
+        }
+
+        function updateQuotes(){
+            const quotesContainer = document.querySelector('.quotes')
+            quotesContainer.innerHTML = ''
+            quotes = [...initQuotes]
+            quotes.sort((x, y) => Number(y.active) - Number(x.active))
+            for (quote of quotes){
+                quotesContainer.innerHTML += quote['html']
+            }
+        }
+
+        function collectData(){
+            let quotes = []
+            for (quoteDiv of document.querySelectorAll('.quote-list')){
+                let id = quoteDiv.id
+                let active = quoteDiv.querySelector('.quote-state-input').checked
+                let groups = {}
+                for (groupInput of quoteDiv.querySelectorAll('.group-input')){
+                    groups[groupInput.name] = groupInput.checked
+                }
+                let tags = []
+                for (tag of quoteDiv.querySelectorAll('.tag')){
+                    tags.push(tag.innerHTML)
+                }
+                quotes.push({'id':id,'active':active,'groups':groups,'tags':tags})
+            }
+            return (quotes)
+        }
+
+        function sendData(){
+            let data = new FormData();
+            data.append('quotes',JSON.stringify(collectData()))
+            data.append('csrfmiddlewaretoken','{{csrf_token}}')
+            navigator.sendBeacon('', data)
+        }
+        
+        function copyUrl(id){
+            event.stopPropagation()
+            url = `{{ request.get_host }}/french/share/${id}`
+            navigator.clipboard.writeText(url)
+        }
+        
+        function shareQuote(elem){
+            event.stopPropagation()
+            let groupContainer = elem.parentNode.querySelector('.groups-container')
+            groupContainer.classList.add('opacity-visible')
+            groupContainer.style.display = 'flex'
+            elem.src = "{% static 'images/cross.svg'%}"
+            elem.setAttribute('onclick','removeShareQuote(this)')
+        }
+
+        function removeShareQuote(elem){
+            event.stopPropagation()
+            let groupContainer = elem.parentNode.querySelector('.groups-container')
+            groupContainer.classList.remove('opacity-visible')
+            groupContainer.style.display = 'none'
+            elem.src = "{% static 'images/share.svg'%}"
+            elem.setAttribute('onclick','shareQuote(this)')
+        }
+
+        function removeQuote(elem){
+            event.stopPropagation()
+            elem.parentNode.parentNode.remove()
+            cursor.classList.remove('small-cursor')
+            cursor.classList.add('color-cursor')
+        }
+
+        function toggleActiveQuote(elem){
+            event.stopPropagation()
+            elem.parentNode.parentNode.classList.toggle('quote-active')
+            if (elem.classList.contains('quote-visible')){
+                elem.parentNode.querySelector('.quote-state-input').checked = false
+                elem.classList.remove('quote-visible')
+                elem.classList.add('quote-hidden')
+                elem.setAttribute('src',"{% static 'images/hidden.svg' %}")
+            } else {
+                elem.parentNode.querySelector('.quote-state-input').checked = true
+                elem.classList.add('quote-visible')
+                elem.classList.remove('quote-hidden')
+                elem.setAttribute('src',"{% static 'images/visible.svg' %}")
+            }
+        }
+        
+        function hideSelectedActiveQuote(){
+            for (quoteDiv of document.querySelectorAll('.quote-selected')){
+                quoteDiv.classList.remove('quote-active','quote-selected')
+                let elem = quoteDiv.querySelector('.status-quote-button')
+                elem.parentNode.querySelector('.quote-state-input').checked = false
+                elem.classList.remove('quote-visible')
+                elem.classList.add('quote-hidden')
+                elem.setAttribute('src',"{% static 'images/hidden.svg' %}")
+            }
+            let inputsContainer = document.querySelector('.inputs-container')
+            if (document.querySelectorAll('.quote-selected').length > 0){
+                inputsContainer.style.visibility = "visible"
+                inputsContainer.style.opacity = '1'
+            } else {
+                inputsContainer.style.opacity = '0'
+                setTimeout(()=>{
+                    inputsContainer.style.visibility = "hidden"
+                },200)  
+            }
+        }
+        function showSelectedActiveQuote(){
+            for (quoteDiv of document.querySelectorAll('.quote-selected')){
+                quoteDiv.classList.add('quote-active')
+                quoteDiv.classList.remove('quote-selected')
+                let elem = quoteDiv.querySelector('.status-quote-button')
+                elem.parentNode.querySelector('.quote-state-input').checked = true
+                elem.classList.add('quote-visible')
+                elem.classList.remove('quote-hidden')
+                elem.setAttribute('src',"{% static 'images/visible.svg' %}")
+            }
+            let inputsContainer = document.querySelector('.inputs-container')
+            if (document.querySelectorAll('.quote-selected').length > 0){
+                inputsContainer.style.visibility = "visible"
+                inputsContainer.style.opacity = '1'
+            } else {
+                inputsContainer.style.opacity = '0'
+                setTimeout(()=>{
+                    inputsContainer.style.visibility = "hidden"
+                },200)  
+            }
+        }
+
+        function searchTag(elem){
+            if (event.keyCode == 8){
+                tagInput = elem.value.slice(0,-1).trim()
+            } else {
+                if (event.key.length == 1){
+                    tagInput = (elem.value + event.key).trim()
+                    
+                } else {
+                    tagInput = elem.value.trim()
+                }
+
+                if (event.keyCode == 13) {
+                    addTag(tagInput)
+                    tagInput = ''
+                }
+            }
+
+            const container = document.querySelector('.tag-bar-item-container')
+            container.innerHTML = ''
+            
+            if (tagInput){
+                for (tag of tags){
+                    if (tag.toLowerCase().startsWith(tagInput.toLowerCase())){
+                        container.innerHTML += `
+                            <button class="tag-bar-item" onclick="addTag('${tag}')">${tag}</button>
+                        `
+                    }
+                }
+            }
+        }
+
+        function addTag(tag){
+            if (!tags.includes(tag)){
+                tags.push(tag)
+            }
+            
+            for (quote of document.querySelectorAll('.quote-selected')){
+                const container = quote.querySelector('.quote-tag-container')
+                exist = false
+                for (existingTag of container.querySelectorAll('.tag')){
+                    if (existingTag.innerHTML == tag){
+                        exist = true
+                    }
+                }
+                if (!exist){
+                    container.innerHTML += `
+                        <p class="quote-tag" onclick="removeTag(this)"><img src='{% static 'images/tags.svg' %}'><span class="tag">${tag}</span><img src='{% static 'images/cross.svg' %}'></p>
+                    `
+                }
+                selectQuote(quote)
+            }   
+            document.querySelector('.tag-bar-item-container').innerHTML = ''
+            document.querySelector('.tag-bar').value = ''
+        }
+
+        function removeTag(elem){
+            event.stopPropagation()
+            elem.remove()
+        }
+
+        function selectQuote(elem){
+            elem.classList.toggle('quote-selected')
+            let inputsContainer = document.querySelector('.inputs-container')
+            if (document.querySelectorAll('.quote-selected').length > 0){
+                inputsContainer.style.visibility = "visible"
+                inputsContainer.style.opacity = '1'
+            } else {
+                inputsContainer.style.opacity = '0'
+                setTimeout(()=>{
+                    inputsContainer.style.visibility = "hidden"
+                },200)  
+            }
+        }
+
+        function filter(){
+            const authorFilter = document.querySelector('#author-filter').value
+            const tagFilter = document.querySelector('#tag-filter').value
+            for (quoteDiv of document.querySelectorAll('.quote-list')){
+                let quoteAuthor = quoteDiv.querySelector('.author').innerHTML
+                let quoteTags = []
+                for (tag of quoteDiv.querySelectorAll('.tag')){
+                    quoteTags.push(tag.innerHTML)
+                }
+
+                if (!authorFilter && !tagFilter){
+                    quoteDiv.style.removeProperty('display')
+                } else if (!authorFilter) {
+                    // only tag Filter
+                    if (quoteTags.includes(tagFilter)){
+                        quoteDiv.style.removeProperty('display')
+                    } else {
+                        quoteDiv.style.display = 'none' 
+                    }
+                } else if (!tagFilter){
+                    if (authorFilter == quoteAuthor){
+                        quoteDiv.style.removeProperty('display')
+                    } else {
+                        quoteDiv.style.display = 'none' 
+                    }
+                } else {
+                    if (authorFilter == quoteAuthor && quoteTags.includes(tagFilter)){
+                        quoteDiv.style.removeProperty('display')
+                    } else {
+                        quoteDiv.style.display = 'none'
+                    }
+                }
+            }
+
+        }
+
+        function filterAuthor(elem){
+            const authorFilter = elem.value
+            for (quoteDiv of document.querySelectorAll('.quote-list')){
+                quoteAuthor = quoteDiv.querySelector('.author').innerHTML
+                if (authorFilter){
+                    if (authorFilter != quoteAuthor){
+                        quoteDiv.style.display = 'none'
+                    } else {
+                        quoteDiv.style.removeProperty('display')
+                    }
+                } else {
+                    quoteDiv.style.removeProperty('display')
+                }
+            }   
+        }
+
+        function filterTag(elem){
+            for (quoteDiv of document.querySelectorAll('.quote-list')){
+                let quoteTags = []
+                for (tag of quoteDiv.querySelectorAll('.tag')){
+                    quoteTags.push(tag.innerHTML)
+                }
+
+                if (tagFilter){
+                    if (quoteTags.includes(tagFilter)) {
+                        quoteDiv.style.removeProperty('display')
+                    } else {
+                        quoteDiv.style.display = 'none'
+                    }
+                } else {
+                    quoteDiv.style.removeProperty('display')
+                }
+            }  
+        }
+    </script>
+{% endblock %}

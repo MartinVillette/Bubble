@@ -1,0 +1,298 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Ecrire</title>
+    <link rel="stylesheet" href="{% static 'css/typing.css'%}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+
+
+    <p class="timer"></p>
+    <div class="page-container">
+        <div class="quotes-container"></div>
+        <div class="typing-container">
+            <input type="text" name="" class="typing-input" id="" onkeypress="keyDown(this)" placeholder="Ecris...">
+            <button onclick="restart()" class="second-button"><img src="{% static 'images/refresh.svg' %}" alt=""></button>
+        </div>
+    </div>
+
+    <div class="finished-container">
+        <div class="container">
+            <p class="wpm"><span class="wpm-value"></span> mot par minute</p>
+            <div class="finished-navigator">
+                <button onclick="endRestart()" class="second-button"><img src="{% static 'images/refresh.svg' %}" alt=""></button>
+                <button onclick="changeWindow(`{% url 'lesson-french' %}`), 'color'" class="second-button"><img src="{% static 'images/return.svg' %}" alt=""></button>
+            </div>
+        </div>
+        
+    </div>
+
+    
+    
+    <script>      
+        document.querySelector('.finished-container').addEventListener("mouseover", function() {
+            cursor.classList.add('color-cursor')
+            cursor.style.zIndex = '1'
+        }, false);
+        document.querySelector('.finished-container').addEventListener("mouseout", function() {
+            cursor.classList.remove('color-cursor')
+            cursor.style.removeProperty('z-index')
+        }, false);
+
+        hoverSmallColor(document.querySelector('.typing-input'))
+        document.querySelector('.typing-input').addEventListener("mouseover", function() {
+            cursor.style.zIndex = '1'
+        }, false);
+        document.querySelector('.typing-input').addEventListener("mouseout", function() {
+            cursor.style.removeProperty('z-index')
+        }, false);
+        
+        for (secondButton of document.querySelectorAll('.second-button')){
+            hover100(secondButton)
+        }
+        
+        // document.querySelector('.typing-input').addEventListener('focusin', ()=>{
+        //     cursor.style.visibility = 'hidden'
+        // })
+        // document.querySelector('.typing-input').addEventListener('focusout', ()=>{
+        //     cursor.style.removeProperty('visibility')
+        // })
+
+        
+        let quotes = [
+            {% for quoteProfile in profile.quotes.all %}
+            {% if quoteProfile.active %}
+            {
+                'id':'{{quoteProfile.quote.id}}',
+                'author':'{{quoteProfile.quote.author}}',
+                'page':'{{quoteProfile.quote.page}}',
+                'quote':`{{quoteProfile.quote.quote | safe }}`,
+                'counter':parseInt('{{ quoteProfile.counter }}'),
+            },
+            {% endif %}
+            {% endfor %}
+        ]
+        const quotesContainer = document.querySelector('.quotes-container')
+        const timerText = document.querySelector('.timer')
+        let currentQuotes = []
+        let started = false
+        let currentIndex = 0
+        let correctChars = 0
+        let quotesElem = []
+        let timer
+        const timeInit = 30
+
+        window.addEventListener("pageshow", ()=>{
+            setQuotes()
+        });
+
+        function updateTimer(){
+            if (!started){
+                /*
+                started = true
+                let time = timeInit
+                timerText.innerHTML = time
+                timerText.classList.add('opacity-visible')
+                time--
+                timer = setInterval(()=>{
+                    if (time > 0){
+                        timerText.innerHTML = time
+                        time--
+                    } else {
+                        clearInterval(timer)
+                        timerText.innerHTML = ''
+                        document.querySelector('.typing-input').disabled = true
+                        started = false
+                        let wpm = parseInt((correctChars/4.65)/(timeInit/60))
+                        end(wpm)
+                    }
+                },1000)
+                */
+            }
+        }
+
+        function onlyUnique(value, index, self) {
+            return self.indexOf(value) === index;
+        }
+
+        function getKeyByValue(object, value) {
+            return Object.keys(object).find(key => object[key] === value);
+        }
+
+        function shuffle(array) {
+            let currentIndex = array.length,  randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return [...array]
+        }
+
+        function sortArray(array) {
+            arr = [...array]
+            arr.sort((a,b)=>{
+                return b.counter - a.counter
+            }).reverse()
+            counters = arr.map(({counter}) => counter).filter(onlyUnique)
+            let l = []
+            for (i of counters){
+                let sub = []
+                for (h of array){
+                    if (h['counter'] == i){
+                        sub.push(h)
+                    }
+                }
+                l = l.concat(shuffle(sub))
+            }
+            return (l)
+        }
+
+        function setQuotes(){
+            quotesContainer.innerHTML = ''
+            if (currentQuotes.length > 0){
+                let newQuotes = sortArray(quotes)
+                let index = newQuotes.indexOf(currentQuotes[0]);
+                if (index !== -1) {
+                    newQuotes.splice(index, 1);
+                }
+                newQuotes.unshift(currentQuotes[0]) 
+                currentQuotes = newQuotes
+            } else {
+                currentQuotes = sortArray(quotes)
+            }
+            for (quote of currentQuotes){
+                let temp = []
+                let quoteContainer = document.createElement('div')
+                quoteContainer.classList.add('quote-container')
+                let quoteDiv = document.createElement('div')
+                quoteDiv.classList.add('quote')
+                // let words = quote.quote.replaceAll(',','').split(' ')
+                let words = quote.quote.replaceAll('’',"'").split(' ')
+                for (word of words){
+                    let spanWord = document.createElement('span')
+                    spanWord.classList.add('word')
+                    spanWord.textContent = word
+                    quoteDiv.appendChild(spanWord)
+                    temp.push(spanWord)
+                }
+                let descDiv = document.createElement('div')
+                descDiv.classList.add('description-container')  
+                let author = document.createElement('p')
+                author.classList.add('author')
+                author.innerHTML = quote.author
+                descDiv.appendChild(author)
+                if (quote.page != ""){
+                    let page = document.createElement('p')
+                    page.innerHTML = `p.${quote.page}`
+                    page.classList.add('page')
+                    descDiv.appendChild(page)
+                }
+                quoteContainer.append(quoteDiv, descDiv)
+                quotesContainer.append(quoteContainer)
+                quotesElem.push(temp)
+            }
+            let quoteDivs = document.querySelectorAll('.quote-container')
+            for (i=0;i < Math.min(2,quoteDivs.length);i++){
+                quoteDivs[i].style.display = 'flex'
+            } 
+            quotesElem[currentIndex][0].classList.add('active')
+            document.querySelector('.typing-input').focus()
+        }
+
+        function keyDown(input){
+            /*
+            if (!started){
+                updateTimer()
+            }
+            */
+            let input_value = input.value.trim()
+            word = quotesElem[currentIndex][0]
+            if (event.keyCode == 32){
+                input.value = ''
+                if (input_value){
+                    if (word.innerHTML != input_value){
+                        word.classList.add('wrong')
+                    } else {
+                        correctChars = correctChars + word.innerHTML.length
+                        word.classList.add('correct')
+                    }
+                    word.classList.remove('active')
+                    word.classList.remove('currently-wrong')
+
+                    let quoteDivs = document.querySelectorAll('.quote-container')
+                    quotesElem[currentIndex].shift()
+
+                    if (quotesElem[currentIndex].length == 0){
+                        quoteDivs[currentIndex].style.display = 'none'
+                        currentQuote = currentQuotes[0]
+                        currentQuotes.shift()
+                        for (quote of quotes){
+                            if (quote['quote'] == currentQuote['quote']){
+                                quote['counter'] = quote['counter'] + 1
+                            }
+                        }
+                        currentIndex++
+                    } 
+
+                    if (currentIndex+1 >= quotesElem.length){
+                        quotesElem = []
+                        currentIndex = 0
+                        setQuotes()
+                    } else {
+                        quoteDivs[currentIndex+1].style.display = 'flex'
+                        quotesElem[currentIndex][0].classList.add('active')
+                    }
+                } 
+            } else {
+                input_value += event.key
+                if (!word.innerHTML.startsWith(input_value)){
+                    word.classList.add('currently-wrong')
+                } else {
+                    word.classList.remove('currently-wrong')
+                }
+            }
+        }
+
+        function end(wpm){
+            document.querySelector('.page-container').style.display = 'none'
+            document.querySelector('.timer').classList.remove('opacity-visible')
+            document.querySelector('.finished-container').style.display = 'flex'
+            document.querySelector('.finished-container').classList.add('opacity-visible')
+            document.querySelector('.wpm-value').innerHTML = wpm
+        }
+
+        function restart(){
+            sendData()
+            quotesElem = []
+            currentQuotes = []
+            currentIndex = 0
+            document.querySelector('.typing-input').disabled = false
+            document.querySelector('.typing-input').value = ''
+            clearInterval(timer)
+            timerText.innerHTML = ''
+            started = false
+            setQuotes()
+        }
+
+        function endRestart(){
+            document.querySelector('.finished-container').style.display = 'none'
+            document.querySelector('.finished-container').classList.remove('opacity-visible')
+            document.querySelector('.page-container').style.display = 'block'
+            restart()
+        }
+
+        function sendData(){
+            let data = new FormData();
+            data.append('quotes',JSON.stringify(quotes))
+            data.append('csrfmiddlewaretoken','{{csrf_token}}')
+            navigator.sendBeacon('', data)
+        }
+
+        window.addEventListener("beforeunload", () => {
+            event.preventDefault();
+            sendData()
+        });
+
+    </script>
+{% endblock %}

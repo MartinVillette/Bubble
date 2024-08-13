@@ -1,0 +1,198 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Anglais</title>
+    <link rel="stylesheet" href="{% static 'css/menu.css' %}?{% now 'U' %}">
+    <script src="{% static 'scripts/color_page.js' %}"></script>
+
+    
+    <div class="page-container">
+        <section class="section-title">
+            <div class="title-container">
+                <p class="title">Anglais.</p>
+                <button class="create-button" onclick="changeWindow(`{% url 'create-lesson-english'%}`,'white')">Nouvelle leçon +</button>
+            </div>
+        </section>
+        
+        <section class="section-container">
+            {% if lessons %}
+                <div class='navigation-container'>
+                    <input type="input" name="" class="search-bar" id="" placeholder="Rechercher..." onkeydown="search(this)">
+                </div>
+                {% if user_lessons %}
+                <div class="container">
+                    <p class="container-title">Mes leçons.</p>
+                    <div class="items-container">
+                        {% for lesson in user_lessons %}
+                        <div class="item-container"  onclick="changeWindow(`{% url 'lesson-english' lesson_id=lesson.id %}`,'color')">
+                            <p class="item-title">{{lesson.title}}</p>
+                            <p class="item-description">{{lesson.date|date:"j/n/Y"}}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% for group in groups%}
+                {% if group.lessons_english.all %}
+                <div class="container">
+                    <p class="container-title group-link" onclick="changeWindow(`{% url 'group-page' group_id=group.id %}`,'color')">{{group.name}}.</p>
+                    <div class="items-container" id="{{group.id}}">
+                        {% for lesson in group.lessons_english.all %}
+                        <div class="item-container"  onclick="loadLesson(`{% url 'lesson-english' lesson_id=lesson.id %}`,'color')">
+                            <p class="item-title">{{lesson.title}}</p>
+                            <p class="item-description">De {{lesson.author}}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            {% endif %}
+        </section>
+    </div>
+    
+    <div class="loading-screen">
+        <div class="loading-container">
+            <div class="loading-animation">
+                <div class='bubble'></div>
+                <div class='bubble'></div>
+                <div class='bubble'></div>
+            </div>
+            <p class="loading-text">Création de votre profile pour la leçon</p>
+            <p class="loading-subtext">Ne fermez pas la page</p>
+        </div>
+    </div>
+
+    <script>
+        const lessons = {
+            '':[
+                {% for lesson in user_lessons %}
+                    {
+                        'title':'{{lesson.title}}',
+                        'id':'{{lesson.id}}',
+                        'date':'{{lesson.date|date:"j/n/Y"}}',
+                    },
+                {% endfor %}
+                ],
+            {% for group in groups %}
+                '{{group.id}}':[
+                    {% for lesson in group.lessons_english.all %}
+                        {
+                            'title':'{{lesson.title}}',
+                            'id':'{{lesson.id}}',
+                            'date':'{{lesson.date|date:"j/n/Y"}}',
+                            'author':'{{lesson.author}}',
+                        },
+                    {% endfor %}
+                ],
+            {% endfor %}
+        }
+
+        
+        for (groupLink of document.querySelectorAll('.group-link')){
+            hover100(groupLink)
+        }
+
+        {% if lessons %}
+        hoverSmallColor(document.querySelector('.search-bar'))
+        document.querySelector('.search-bar').addEventListener('mouseover',()=>{
+            cursor.style.zIndex = '1'
+        })
+        document.querySelector('.search-bar').addEventListener('mouseout',()=>{
+            cursor.style.removeProperty('z-index')
+        })
+        {% endif %}
+
+        for (item of document.querySelectorAll('.item-container')){
+            hoverSmallColor(item)
+            item.addEventListener('mouseover',()=>{
+                cursor.style.zIndex = '1'
+            })
+            item.addEventListener('mouseout',()=>{
+                cursor.style.removeProperty('z-index')
+            })
+        }
+        
+        hover100(document.querySelector('.create-button'))
+
+        function showContainers(){
+            {% if lessons %}
+            document.querySelector('.section-container').style.display = 'flex'
+            document.querySelector('.title-container').style.marginTop = '20vh'
+            setTimeout(()=>{
+                document.querySelector('.create-button').classList.add('opacity-visible')
+            }, 200)
+            setTimeout(()=>{
+                document.querySelector('.section-container').classList.add('opacity-visible')
+                document.querySelector('body').style.overflowY = 'scroll'
+            }, 500)
+            {% else %}
+            setTimeout(()=>{
+                document.querySelector('.create-button').classList.add('opacity-visible')
+            }, 200)
+            {% endif %}
+        }
+
+        window.addEventListener("pageshow", function(){
+            document.querySelector('.section-title').classList.add('opacity-visible')
+            showContainers()
+        });
+
+        function search(elem){
+            if (event.keyCode == 8){
+                lessonTitle = elem.value.slice(0,-1).trim().toLowerCase()
+            } else {
+                lessonTitle = (elem.value + event.key).trim().toLowerCase()
+            }
+            for (container of document.querySelectorAll('.items-container')){
+                container.innerHTML = ''
+                let containerLessonTitle = lessons[container.id]
+                console.log(lessons)
+                for (lesson of containerLessonTitle){
+                    title = lesson['title'].trim().toLowerCase()
+                    if (title.startsWith(lessonTitle)){
+                        url = `{% url 'lesson-english' lesson_id=12345 %}`.replace(/12345/,lesson['id']);
+                        if (container.id == ''){
+                            description =  lesson['date']
+                        } else {
+                            description =  `De ${lesson['author']}`
+                        }
+                        container.innerHTML += `
+                        <div class="item-container"  onclick="changeWindow('${url}','color')">
+                            <p class="item-title">${lesson['title']}</p>
+                            <p class="item-description">${description}</p>
+                        </div>
+                        `
+                    }
+                }
+            }
+            for (item of document.querySelectorAll('.item-container')){
+                hoverSmallColor(item)
+                item.addEventListener('mouseover',()=>{
+                    cursor.style.zIndex = '1'
+                })
+                item.addEventListener('mouseout',()=>{
+                    cursor.style.removeProperty('z-index')
+                })
+            }
+        }
+
+        function loadLesson(url, color){
+            const transitionDiv = document.querySelector('.transition-div')
+            transitionDiv.style.background = 'var(--color)'
+            transitionDiv.style.visibility = 'visible'
+            transitionDiv.style.left = event.pageX + 'px';
+            transitionDiv.style.top = event.pageY + 'px';
+            transitionDiv.classList.add('transition-active')
+            document.querySelector('body').style.overflowY = 'hidden'
+            setTimeout(() => {
+                document.querySelector('.loading-screen').style.display = 'block'
+                setTimeout(() => {
+                    document.querySelector('.loading-container').classList.add('opacity-visible')
+                },100)
+                transitionDiv.style.visibility = 'hidden'
+                window.location.href = url
+            }, 1000);
+        }
+    </script>
+{% endblock %}

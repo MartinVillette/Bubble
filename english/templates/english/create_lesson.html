@@ -1,0 +1,311 @@
+{% extends 'english/base.html' %}
+{% load static %}
+{% block content %}
+    <title>Bubble - Nouvelle leçon</title>
+    <link rel="stylesheet" href="{% static 'css/create_lesson.css'%}?{% now 'U' %}">
+    <script src="{% static 'scripts/white_page.js' %}"></script>
+
+    <script src="https://mike.zwobble.org/static/projects/mammoth/mammoth.browser.min.js"></script>
+
+    <div class="form-container">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form }}
+            {{ formset.management_form }}
+
+            <input type="file" name="file" id="file" class="file-input" onchange="processSelectedFiles()" accept=".doc,.docx,.txt">
+            <label for="file" class="file-label">Choisir un fichier</label>
+
+            {% if form.errors %}
+                <div class="error-list">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <p>{{ error|escape }}</p>
+                    {% endfor %}
+                {% endfor %}
+                </div>
+            {% endif %}
+
+            <div id="card-container">
+                {% for f in formset %}
+                    <div class="forms">
+                        {{f}}
+                    </div>
+                {% endfor %}
+                <div id="forms"></div>      
+                
+            </div>
+        </form>
+        
+        
+        
+    </div>
+    <div class="navigation-container">
+        {% if 'edit' in request.build_absolute_uri %}
+        <input class="submit-button" type="button" onclick="createLesson(this)" name="" id="" value='Modifer'>
+        {% else %}
+        <input class="submit-button" type="button" onclick="createLesson(this)" name="" id="" value='Créer'>
+        {% endif %}
+    </div>
+
+    {% if 'edit' in request.build_absolute_uri %}
+    <button id="back-button" class="page-button" onclick="changeWindow(`{% url 'lesson-english' lesson_id=lesson.id %}`,'color')">Retour</button>
+    {% endif %}
+
+
+    <div class="loading-screen">
+        <div class="loading-container">
+            <div class="loading-animation">
+                <div class='bubble'></div>
+                <div class='bubble'></div>
+                <div class='bubble'></div>
+            </div>
+            <p class="loading-text">Création de la leçon</p>
+            <p class="loading-subtext">Ne fermez pas la page</p>
+        </div>
+    </div>
+
+    <script>
+        for (button of document.querySelectorAll('.page-button')){
+            hover100(button)
+            button.classList.add('opacity-visible')
+        } 
+
+        document.querySelector('.navigation-container').addEventListener('mouseover',()=>{
+            cursor.style.zIndex = '1'
+        })
+        document.querySelector('.navigation-container').addEventListener('mouseout',()=>{
+            cursor.style.removeProperty('z-index')
+        })
+
+        function showCards(){
+            let i = 0
+            let cards = document.querySelectorAll('.forms')
+            function myLoop() {         //  create a loop function
+                setTimeout(()=> {   //  call a 3s setTimeout when the loop is called                     //  increment the counter
+                    if (i < Math.min(cards.length,6)) {           //  if the counter < 10, call the loop function
+                        cards[i].classList.add('opacity-visible')
+                        myLoop();             
+                    } 
+                    i++                     
+                }, 200)
+            }
+            myLoop()
+            for (j=6; j < cards.length;j++){
+                cards[j].classList.add('opacity-visible')
+            } 
+            document.querySelector('.submit-button').classList.add('opacity-visible')
+            if (document.querySelector('.second-button')){
+                document.querySelector('.second-button').classList.add('opacity-visible')
+            }
+        }
+
+        hoverShowBehind(document.querySelector('.submit-button'))
+
+        window.addEventListener("pageshow", function(){
+            cursor.classList.add('color-cursor')
+            document.getElementsByName('title')[0].focus()
+            document.querySelector('.form-container').classList.add('opacity-visible')
+            setTimeout(()=>{
+                showCards()
+            },500)
+        });
+
+        for (label of document.getElementById('id_groups').getElementsByTagName('label')){
+            label.addEventListener('mouseover', ()=>{
+                cursor.classList.add('small-cursor')
+            })
+            label.addEventListener('mouseout', ()=>{
+                cursor.classList.remove('small-cursor')
+            })
+        }
+
+        hover100(document.querySelector('.submit-button'))
+        if (document.querySelector('.second-button')){
+            hover100(document.querySelector('.second-button'))
+        }
+        
+        for (i=0; i < document.querySelectorAll('.forms').length ; i++){
+            form = document.querySelectorAll('.forms')[i]
+            hoverSmallWhite(form)
+        }
+
+
+        let birdForm = document.querySelectorAll(".forms")
+        for (bird of birdForm){
+            inputs = bird.querySelectorAll('input')
+            for (i=0;i<inputs.length;i++ ){
+                inputs[i].placeholder = `Mot ${i+1}`
+            }
+            let arrow = document.createElement('img')
+            arrow.setAttribute('src',"{% static 'images/arrow.svg' %}")
+            bird.insertBefore(arrow,bird.querySelectorAll("input")[1])
+            let trash = document.createElement('img')
+            trash.setAttribute('src',"{% static 'images/trash.svg' %}")
+            trash.setAttribute('onclick',"remove(this.parentNode)")
+            bird.appendChild(trash,bird.querySelectorAll("input")[1])
+            let plus = document.createElement('img')
+            plus.classList.add('add-form')
+            plus.setAttribute('src',"{% static 'images/plus.svg' %}")
+            plus.setAttribute('onclick',"addForm(this.parentNode)")
+            bird.appendChild(plus,bird.querySelectorAll("trash")[1])
+            let arrowUp = document.createElement('img')
+            arrowUp.setAttribute('src',"{% static 'images/arrow.svg' %}")
+            arrowUp.setAttribute('onclick',"reorder(this.parentNode, 1)")
+            arrowUp.classList.add('arrow-up')
+            bird.insertBefore(arrowUp,inputs[0])
+            let arrowDown = document.createElement('img')
+            arrowDown.setAttribute('src',"{% static 'images/arrow.svg' %}")
+            arrowDown.setAttribute('onclick',"reorder(this.parentNode, -1)")
+            arrowDown.classList.add('arrow-down')
+            bird.insertBefore(arrowDown,inputs[0])
+
+        }
+
+        const container = document.querySelector("#card-container")
+        let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+
+        let formNum = birdForm.length-1
+        // addButton.addEventListener('click', addForm)
+
+        function addForm(elem){
+            let newForm = birdForm[0].cloneNode(true)
+            let formRegex = RegExp(`form-(\\d){1}-`,'g')
+
+            formNum++
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`)
+            for (input of newForm.querySelectorAll("input")){
+                input.value = ""
+            }
+            newForm.addEventListener('mouseover', ()=>{
+                cursor.classList.remove('color-cursor')
+                cursor.classList.add('small-cursor')
+            })
+            newForm.addEventListener('mouseout', ()=>{
+                cursor.classList.add('color-cursor')
+                cursor.classList.remove('small-cursor')
+            })
+            container.insertBefore(newForm,elem.nextSibling)
+            totalForms.setAttribute('value', `${formNum+1}`)
+            document.querySelector(`#id_form-${formNum}-text1`).focus()
+        }
+
+        function remove(ele){
+            forms = document.querySelectorAll('.forms')
+            if (forms.length == 1){
+                for (input of forms[0].getElementsByTagName('input')){
+                    input.value = ''
+                }
+            } else {
+                ele.remove() 
+                cursor.classList.add('color-cursor')
+                cursor.classList.remove('small-cursor')
+            }
+            
+        }
+
+        function findPrevious(elm) {
+            do {
+                elm = elm.previousSibling;
+            } while (elm && elm.nodeType != 1);
+            return elm;
+        }
+        function findNext(elm) {
+            do {
+                elm = elm.nextSibling;
+            } while (elm && elm.nodeType != 1);
+            return elm;
+        }
+
+        function reorder(form,i){
+            if (i == 1){
+                if (findPrevious(form)){
+                    container.insertBefore(form,findPrevious(form))
+                } 
+            } else {
+                if (findNext(form).classList.contains('forms')){
+                    container.insertBefore(findNext(form),form)
+                }                
+            }
+           
+            
+        }
+
+        function createLesson(elem) {
+            const transitionDiv = document.querySelector('.transition-div')
+            transitionDiv.style.background = 'var(--color)'
+            transitionDiv.style.visibility = 'visible'
+            transitionDiv.style.left = event.pageX + 'px';
+            transitionDiv.style.top = event.pageY + 'px';
+            transitionDiv.classList.add('transition-active')
+            
+            setTimeout(() => {
+                document.querySelector('.loading-screen').style.display = 'block'
+                document.querySelector('body').style.overflowY = 'hidden'
+                setTimeout(() => {
+                    document.querySelector('.loading-container').classList.add('opacity-visible')
+                },100)
+                cursor.classList.remove('color-cursor')
+                transitionDiv.style.visibility = 'hidden'
+                document.querySelector('form').submit()
+            }, 1000);
+        }
+
+
+        function processSelectedFiles(){
+            const fileInput = document.querySelector('.file-input')
+            if (fileInput.files.length) {
+                let file = fileInput.files[0]
+                document.querySelector('.file-label').innerHTML = file.name
+                const title = file.name.split('.')[0]
+                const type = file.name.split('.')[1]
+                titleInput.value = title
+                var reader = new FileReader();
+                if (type == 'txt'){
+                    reader.onload = function() {
+                        fileToCards(reader.result)
+                    }
+                    reader.readAsBinaryString(file);
+                } else {
+                    reader.onloadend = function(event) {
+                        let arrayBuffer = reader.result;
+
+                        mammoth.extractRawText({arrayBuffer: arrayBuffer}).then(function (resultObject) {
+                            fileToCards(resultObject.value)
+                        })
+                    }
+                    reader.readAsArrayBuffer(file);
+                }
+                
+            }
+        }
+        
+        function clearForm(){
+            for (form of document.querySelectorAll('.forms')){
+                form.remove()
+            }
+        }
+        
+        function fileToCards(text){
+            button = document.querySelector(".add-form")
+            clearForm()
+            text = text.replaceAll('\r','')
+            let lines = text.split('\n')
+            for (line of lines){
+                if (line.includes(':')){
+                    button.click()
+                    temp = line.split(':')
+                    forms = document.querySelectorAll('.forms')
+                    form = forms[forms.length - 1]
+                    inputs = form.querySelectorAll('input')
+                    inputs[0].value = temp[0].trim()
+                    inputs[1].value = temp[1].trim()
+                }
+            }
+        }
+        
+
+        const titleInput = document.getElementById('id_title');
+        titleInput.placeholder = "Titre de ta leçon"
+    </script>
+{% endblock %}
